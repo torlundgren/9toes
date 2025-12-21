@@ -1,0 +1,25 @@
+{
+  "description": "AI (O) can win local board 4 (center). Should take it.",
+  "state": {
+    "boards": [
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      ["O", "O", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": [null, null, null, null, null, null, null, null, null],
+    "nextBoard": 4,
+    "turn": "O",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "expectedMove": { "bi": 4, "ci": 2 },
+  "reason": "AI should complete top row on center board"
+}

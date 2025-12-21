@@ -1,0 +1,25 @@
+{
+  "description": "Opponent (X) wins next turn if AI doesn't block. AI must block.",
+  "state": {
+    "boards": [
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": ["X", "X", null, null, null, null, null, null, null],
+    "nextBoard": 2,
+    "turn": "O",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "expectedMove": { "bi": 2, "ci": 2 },
+  "reason": "AI must play cell 2 on board 2 to block X from winning board 2 and the game"
+}

@@ -1,0 +1,25 @@
+{
+  "description": "Opponent (X) has 2-in-a-row on board 0. AI should block.",
+  "state": {
+    "boards": [
+      ["X", "X", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": [null, null, null, null, null, null, null, null, null],
+    "nextBoard": 0,
+    "turn": "O",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "expectedMove": { "bi": 0, "ci": 2 },
+  "reason": "AI should block X from winning board 0"
+}

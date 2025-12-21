@@ -1,0 +1,25 @@
+{
+  "description": "Game-winning move should score exactly 1000",
+  "state": {
+    "boards": [
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": ["X", "X", null, null, null, null, null, null, null],
+    "nextBoard": 2,
+    "turn": "X",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "move": { "bi": 2, "ci": 2 },
+  "expectedScore": 1000
+}

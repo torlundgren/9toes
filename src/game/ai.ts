@@ -33,8 +33,8 @@ function countInLine(cells: Cell[], line: number[], player: Player): number {
   return line.filter((i) => cells[i] === player).length;
 }
 
-/** Score a potential move using heuristics */
-function scoreMove(state: GameState, move: Move): number {
+/** Score a potential move using heuristics (exported for golden tests) */
+export function scoreMove(state: GameState, move: Move): number {
   const { bi, ci } = move;
   const { boards, local, turn } = state;
   const opp = other(turn);
