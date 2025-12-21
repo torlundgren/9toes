@@ -117,6 +117,7 @@
   color: var(--o-color);
 }
 
+/* Start Panel */
 .startPanel {
   width: min(92vw, calc(100vh - 140px), 720px);
   display: flex;
@@ -125,46 +126,183 @@
 }
 
 .startCard {
-  width: min(92vw, 520px);
-  background: var(--panel);
-  border-radius: var(--radius);
-  padding: 24px;
-  border: 1px solid var(--lineStrong);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+  width: min(92vw, 400px);
+  background: var(--bg-panel);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 20px 60px var(--shadow);
 }
 
-.startTitle {
-  font-size: 1.2rem;
+.startHeader {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 28px;
+  letter-spacing: -0.02em;
+}
+
+.startSection {
+  margin-bottom: 24px;
+}
+
+.startSectionTitle {
+  font-size: 0.75rem;
   font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.startSubtitle {
-  font-size: 0.95rem;
-  opacity: 0.7;
-  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
 }
 
 .startOptions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-.startOption {
-  border: 1px solid rgba(233, 236, 241, 0.18);
-  background: rgba(255, 255, 255, 0.03);
+.optionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: var(--bg-panel);
+  cursor: pointer;
+  transition: all 150ms ease;
 }
 
-.startOption.btnActive {
-  border-color: var(--lineStrong);
-  background: rgba(59, 130, 246, 0.25);
+.optionCard:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-button-hover);
 }
 
-.startBtn {
-  width: 100%;
+.optionCard.selected {
+  border-color: var(--accent);
+  background: rgba(100, 108, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.2);
+}
+
+.optionIcon {
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text-dim);
+}
+
+.optionCard.selected .optionIcon {
+  color: var(--text);
+}
+
+.optionX {
+  color: var(--x-color) !important;
+}
+
+.optionO {
+  color: var(--o-color) !important;
+}
+
+.optionEmoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.optionLabel {
+  font-size: 0.8rem;
   font-weight: 600;
+  color: var(--text-dim);
+}
+
+.optionCard.selected .optionLabel {
+  color: var(--text);
+}
+
+.optionToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--bg-panel);
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: left;
+}
+
+.optionToggle:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-button-hover);
+}
+
+.optionToggle.selected {
+  border-color: var(--accent);
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.optionToggleIcon {
+  font-size: 1.4rem;
+}
+
+.optionToggleText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.optionToggleLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.optionToggleDesc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.optionToggleCheck {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: transparent;
+  transition: all 150ms ease;
+}
+
+.optionToggleCheck.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.startCta {
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+}
+
+.startCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.4);
 }
 
 /* Theme toggle - discrete in corner */

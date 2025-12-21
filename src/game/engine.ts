@@ -1,4 +1,5 @@
 export type Player = "X" | "O";
+export type Difficulty = "easy" | "medium" | "hard";
 export type Cell = Player | null;
 export type LocalResult = Player | "D" | null; // D = draw (full, no winner)
 export type GameResult = Player | "D" | null;

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import {
   canDouble,
+  type Difficulty,
   type GameState,
   getWinningLineIndex,
   initialState,
@@ -82,6 +83,7 @@ export default function App() {
   const [vsAI, setVsAI] = useState(true);
   const [useCube, setUseCube] = useState(false);
   const [sideChoice, setSideChoice] = useState<"X" | "O" | "R">("X");
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [playerSide, setPlayerSide] = useState<Player | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const [stats, setStats] = useState<Stats>(loadStats);
@@ -309,7 +311,7 @@ export default function App() {
         return;
       }
 
-      const move = pickMove(state);
+      const move = pickMove(state, difficulty);
       if (move) {
         setState((prev) => {
           pushHistory(prev);
@@ -320,7 +322,7 @@ export default function App() {
     }, 400 + Math.random() * 300);
 
     return () => clearTimeout(timer);
-  }, [vsAI, aiSide, playerSide, state, useCube]);
+  }, [vsAI, aiSide, playerSide, state, useCube, difficulty]);
 
   // Compute winLines for display (UI-only concern)
   const getWinLine = (bi: number): number | null => {
@@ -344,12 +346,6 @@ export default function App() {
             onClick={() => setVsAI((v) => !v)}
           >
             vs AI
-          </button>
-          <button
-            className={`btn btnToggle ${useCube ? "btnActive" : ""}`}
-            onClick={() => setUseCube((v) => !v)}
-          >
-            Cube
           </button>
           <button className="btn" onClick={undo} disabled={history.length === 0 || aiThinking}>
             Undo
@@ -377,29 +373,80 @@ export default function App() {
       {needsSideSelect ? (
         <section className="startPanel" aria-label="Choose side to start">
           <div className="startCard">
-            <div className="startTitle">Start Game</div>
-            <div className="startSubtitle">Pick your side before the first move.</div>
-            <div className="startOptions">
+            <div className="startHeader">New Game</div>
+
+            <div className="startSection">
+              <div className="startSectionTitle">Play as</div>
+              <div className="startOptions">
+                <button
+                  className={`optionCard ${sideChoice === "X" ? "selected" : ""}`}
+                  onClick={() => setSideChoice("X")}
+                >
+                  <span className="optionIcon optionX">X</span>
+                  <span className="optionLabel">First</span>
+                </button>
+                <button
+                  className={`optionCard ${sideChoice === "O" ? "selected" : ""}`}
+                  onClick={() => setSideChoice("O")}
+                >
+                  <span className="optionIcon optionO">O</span>
+                  <span className="optionLabel">Second</span>
+                </button>
+                <button
+                  className={`optionCard ${sideChoice === "R" ? "selected" : ""}`}
+                  onClick={() => setSideChoice("R")}
+                >
+                  <span className="optionIcon">?</span>
+                  <span className="optionLabel">Random</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="startSection">
+              <div className="startSectionTitle">Difficulty</div>
+              <div className="startOptions">
+                <button
+                  className={`optionCard ${difficulty === "easy" ? "selected" : ""}`}
+                  onClick={() => setDifficulty("easy")}
+                >
+                  <span className="optionEmoji">😊</span>
+                  <span className="optionLabel">Easy</span>
+                </button>
+                <button
+                  className={`optionCard ${difficulty === "medium" ? "selected" : ""}`}
+                  onClick={() => setDifficulty("medium")}
+                >
+                  <span className="optionEmoji">🤔</span>
+                  <span className="optionLabel">Medium</span>
+                </button>
+                <button
+                  className={`optionCard ${difficulty === "hard" ? "selected" : ""}`}
+                  onClick={() => setDifficulty("hard")}
+                >
+                  <span className="optionEmoji">😈</span>
+                  <span className="optionLabel">Hard</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="startSection">
+              <div className="startSectionTitle">Options</div>
               <button
-                className={`btn startOption ${sideChoice === "X" ? "btnActive" : ""}`}
-                onClick={() => setSideChoice("X")}
+                className={`optionToggle ${useCube ? "selected" : ""}`}
+                onClick={() => setUseCube((v) => !v)}
               >
-                Play as X
-              </button>
-              <button
-                className={`btn startOption ${sideChoice === "O" ? "btnActive" : ""}`}
-                onClick={() => setSideChoice("O")}
-              >
-                Play as O
-              </button>
-              <button
-                className={`btn startOption ${sideChoice === "R" ? "btnActive" : ""}`}
-                onClick={() => setSideChoice("R")}
-              >
-                Random
+                <span className="optionToggleIcon">🎲</span>
+                <span className="optionToggleText">
+                  <span className="optionToggleLabel">Doubling Cube</span>
+                  <span className="optionToggleDesc">Backgammon-style stakes</span>
+                </span>
+                <span className={`optionToggleCheck ${useCube ? "checked" : ""}`}>
+                  {useCube ? "✓" : ""}
+                </span>
               </button>
             </div>
-            <button className="btn startBtn" onClick={startGame}>
+
+            <button className="startCta" onClick={startGame}>
               Start Game
             </button>
           </div>

@@ -6,6 +6,7 @@ import {
   legalMoves,
   other,
   type Cell,
+  type Difficulty,
   type GameState,
   type Move,
   type Player,
@@ -145,9 +146,14 @@ function scoreMove(state: GameState, move: Move): number {
 // ─────────────────────────────────────────────────────────────
 
 /** Pick the best move for the current player using heuristic scoring */
-export function pickMove(state: GameState): Move | null {
+export function pickMove(state: GameState, difficulty: Difficulty = "medium"): Move | null {
   const moves = legalMoves(state);
   if (moves.length === 0) return null;
+
+  // Easy: 15% chance of random move (blunder)
+  if (difficulty === "easy" && Math.random() < 0.15) {
+    return moves[Math.floor(Math.random() * moves.length)];
+  }
 
   // Score all moves
   const scored = moves.map((m) => ({
@@ -158,10 +164,23 @@ export function pickMove(state: GameState): Move | null {
   // Sort descending by score
   scored.sort((a, b) => b.score - a.score);
 
-  // Pick randomly among top moves (within 10 points of best)
   const best = scored[0].score;
-  const top = scored.filter((m) => m.score >= best - 10);
 
+  // Select based on difficulty
+  let threshold: number;
+  switch (difficulty) {
+    case "easy":
+      threshold = 50; // Wide range - picks from many moves
+      break;
+    case "hard":
+      threshold = 3; // Tight range - near-optimal
+      break;
+    case "medium":
+    default:
+      threshold = 10; // Current balanced play
+  }
+
+  const top = scored.filter((m) => m.score >= best - threshold);
   return top[Math.floor(Math.random() * top.length)];
 }
 
