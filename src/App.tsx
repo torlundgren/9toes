@@ -97,6 +97,8 @@ export default function App() {
   const [autoPlay, setAutoPlay] = useState(false);
   const [theme, setTheme] = useState<Theme>(loadTheme);
   const [commentary, setCommentary] = useState<string | null>(null);
+  const [lastAiMove, setLastAiMove] = useState<{ bi: number; ci: number } | null>(null);
+  const [aiTargetBoard, setAiTargetBoard] = useState<number | null>(null);
 
   // Apply theme to document
   useEffect(() => {
@@ -323,13 +325,28 @@ export default function App() {
 
       const move = pickMove(state, difficulty);
       if (move) {
-        setState((prev) => {
-          pushHistory(prev);
-          return applyMove(prev, move);
-        });
+        // Step 1: Highlight the target board (like player sees)
+        setAiTargetBoard(move.bi);
+
+        // Step 2: After pause, make the move with cell animation
+        setTimeout(() => {
+          setLastAiMove({ bi: move.bi, ci: move.ci });
+          setState((prev) => {
+            pushHistory(prev);
+            return applyMove(prev, move);
+          });
+
+          // Step 3: After another pause, clear and end turn
+          setTimeout(() => {
+            setAiTargetBoard(null);
+            setLastAiMove(null);
+            setAiThinking(false);
+          }, 1000);
+        }, 1000);
+      } else {
+        setAiThinking(false);
       }
-      setAiThinking(false);
-    }, 400 + Math.random() * 300);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [vsAI, aiSide, playerSide, state, useCube, difficulty]);
@@ -468,9 +485,11 @@ export default function App() {
               {displayState.boards.map((board, bi) => {
             const decided = displayState.local[bi];
             const winLine = getWinLine(bi);
+            const isPlayable = !aiThinking && !isReplaying && !state.result && state.local[bi] === null && (state.nextBoard === null || state.nextBoard === bi);
+            const isAiTarget = aiTargetBoard === bi;
             const cls = [
                   "smallBoard",
-                  !isReplaying && !state.result && state.local[bi] === null && (state.nextBoard === null || state.nextBoard === bi) ? "playable" : "dim",
+                  (isPlayable || isAiTarget) ? "playable" : "dim",
                   decided ? "decided" : "",
                 ].join(" ");
 
@@ -481,10 +500,18 @@ export default function App() {
                       {board.map((cell, ci) => {
                         const click = () => handleMove(bi, ci);
                         const isClick = !isReplaying && cellClickable(bi, ci);
+                        const isLastAiMove = lastAiMove?.bi === bi && lastAiMove?.ci === ci;
+                        const cellClass = [
+                          "cell",
+                          isClick ? "cellActive" : "",
+                          cell === "X" ? "cellX" : "",
+                          cell === "O" ? "cellO" : "",
+                          isLastAiMove ? "cellHighlight" : "",
+                        ].filter(Boolean).join(" ");
                         return (
                           <button
                             key={ci}
-                            className={`cell ${isClick ? "cellActive" : ""}`}
+                            className={cellClass}
                             onClick={click}
                             disabled={!isClick || isReplaying}
                             aria-label={`Board ${bi + 1}, cell ${ci + 1}`}

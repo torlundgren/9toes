@@ -20,8 +20,8 @@
   --overlay-bg: rgba(0, 0, 0, 0.6);
   --overlay-dark: rgba(0, 0, 0, 0.85);
   --shadow: rgba(0, 0, 0, 0.4);
-  --x-color: #ef4444;
-  --o-color: #3b82f6;
+  --x-color: #3b82f6;
+  --o-color: #ef4444;
   --accent: #646cff;
 }
 
@@ -39,8 +39,8 @@
   --overlay-bg: rgba(255, 255, 255, 0.7);
   --overlay-dark: rgba(255, 255, 255, 0.92);
   --shadow: rgba(0, 0, 0, 0.15);
-  --x-color: #dc2626;
-  --o-color: #2563eb;
+  --x-color: #2563eb;
+  --o-color: #dc2626;
   --accent: #4f46e5;
 }
 
