@@ -18,11 +18,11 @@ type HistoryEntry = GameState;
 
 type Stats = {
   games: number;
-  xWins: number;
-  oWins: number;
+  humanWins: number;
+  aiWins: number;
   draws: number;
-  xPoints: number;
-  oPoints: number;
+  humanPoints: number;
+  aiPoints: number;
 };
 
 const STATS_KEY = "9toes-stats";
@@ -53,20 +53,24 @@ function loadStats(): Stats {
     const saved = localStorage.getItem(STATS_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Migrate old stats without points
-      return {
-        games: parsed.games ?? 0,
-        xWins: parsed.xWins ?? 0,
-        oWins: parsed.oWins ?? 0,
-        draws: parsed.draws ?? 0,
-        xPoints: parsed.xPoints ?? 0,
-        oPoints: parsed.oPoints ?? 0,
-      };
+      // Migrate from old X/O format to Human/AI format
+      if ('humanWins' in parsed) {
+        return {
+          games: parsed.games ?? 0,
+          humanWins: parsed.humanWins ?? 0,
+          aiWins: parsed.aiWins ?? 0,
+          draws: parsed.draws ?? 0,
+          humanPoints: parsed.humanPoints ?? 0,
+          aiPoints: parsed.aiPoints ?? 0,
+        };
+      }
+      // Old format - reset stats since we can't know who was human
+      return { games: 0, humanWins: 0, aiWins: 0, draws: 0, humanPoints: 0, aiPoints: 0 };
     }
   } catch {
     // Ignore localStorage read errors.
   }
-  return { games: 0, xWins: 0, oWins: 0, draws: 0, xPoints: 0, oPoints: 0 };
+  return { games: 0, humanWins: 0, aiWins: 0, draws: 0, humanPoints: 0, aiPoints: 0 };
 }
 
 function saveStats(stats: Stats) {
@@ -149,23 +153,26 @@ export default function App() {
   // Record game result when it ends
   useEffect(() => {
     if (!state.result || gameRecorded) return;
+    if (!vsAI || !playerSide) return; // Only track vs AI games
 
     const points = useCube ? state.cubeValue : 1;
+    const humanWon = state.result === playerSide;
+    const aiWon = state.result === aiSide;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setStats((prev) => {
       const next = {
         games: prev.games + 1,
-        xWins: prev.xWins + (state.result === "X" ? 1 : 0),
-        oWins: prev.oWins + (state.result === "O" ? 1 : 0),
+        humanWins: prev.humanWins + (humanWon ? 1 : 0),
+        aiWins: prev.aiWins + (aiWon ? 1 : 0),
         draws: prev.draws + (state.result === "D" ? 1 : 0),
-        xPoints: prev.xPoints + (state.result === "X" ? points : 0),
-        oPoints: prev.oPoints + (state.result === "O" ? points : 0),
+        humanPoints: prev.humanPoints + (humanWon ? points : 0),
+        aiPoints: prev.aiPoints + (aiWon ? points : 0),
       };
       saveStats(next);
       return next;
     });
     setGameRecorded(true);
-  }, [state.result, gameRecorded, state.cubeValue, useCube]);
+  }, [state.result, gameRecorded, state.cubeValue, useCube, vsAI, playerSide, aiSide]);
 
   const status = useMemo(() => {
     if (isReplaying) {
@@ -300,6 +307,9 @@ export default function App() {
     // AI's turn to move (or potentially double)
     if (state.turn !== aiSide) return;
 
+    // If AI just doubled, wait for human to respond
+    if (state.pendingDouble === aiSide) return;
+
     setAiThinking(true);
 
     // Small delay to feel more natural
@@ -358,8 +368,8 @@ export default function App() {
 
       <div className="statsBar">
         <span className="statItem">Games: {stats.games}</span>
-        <span className="statItem statX">X: {stats.xWins}{useCube && ` (${stats.xPoints}pts)`}</span>
-        <span className="statItem statO">O: {stats.oWins}{useCube && ` (${stats.oPoints}pts)`}</span>
+        <span className="statItem statHuman">You: {stats.humanWins}{useCube && ` (${stats.humanPoints}pts)`}</span>
+        <span className="statItem statAI">AI: {stats.aiWins}{useCube && ` (${stats.aiPoints}pts)`}</span>
         <span className="statItem">Draws: {stats.draws}</span>
       </div>
 

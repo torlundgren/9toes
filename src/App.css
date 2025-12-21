@@ -109,12 +109,12 @@
   gap: 4px;
 }
 
-.statX {
-  color: var(--x-color);
+.statHuman {
+  color: #22c55e;
 }
 
-.statO {
-  color: var(--o-color);
+.statAI {
+  color: #f59e0b;
 }
 
 /* Start Panel */
