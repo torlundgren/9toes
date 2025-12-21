@@ -1,0 +1,25 @@
+{
+  "description": "AI (O) has winning move: complete top row of big board. Must take it.",
+  "state": {
+    "boards": [
+      ["O", "O", "O", null, null, null, null, null, null],
+      ["O", "O", "O", null, null, null, null, null, null],
+      ["O", "O", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": ["O", "O", null, null, null, null, null, null, null],
+    "nextBoard": 2,
+    "turn": "O",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "expectedMove": { "bi": 2, "ci": 2 },
+  "reason": "AI must complete board 2 to win top row (boards 0,1,2)"
+}

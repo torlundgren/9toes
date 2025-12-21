@@ -1,0 +1,28 @@
+{
+  "description": "After playing to cell 7, next player is forced to board 7",
+  "state": {
+    "boards": [
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": [null, null, null, null, null, null, null, null, null],
+    "nextBoard": null,
+    "turn": "X",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "move": { "bi": 4, "ci": 7 },
+  "expected": {
+    "nextBoard": 7,
+    "turn": "O"
+  }
+}

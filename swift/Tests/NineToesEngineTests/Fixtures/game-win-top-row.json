@@ -1,0 +1,28 @@
+{
+  "description": "X wins boards 0, 1, 2 (top row) -> X wins the game",
+  "state": {
+    "boards": [
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": ["X", "X", null, null, null, null, null, null, null],
+    "nextBoard": 2,
+    "turn": "X",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "move": { "bi": 2, "ci": 2 },
+  "expected": {
+    "result": "X",
+    "local_2": "X"
+  }
+}

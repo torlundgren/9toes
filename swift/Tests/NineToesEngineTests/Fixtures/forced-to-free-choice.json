@@ -1,0 +1,27 @@
+{
+  "description": "After playing to cell 4, target board 4 is already decided -> free choice",
+  "state": {
+    "boards": [
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null]
+    ],
+    "local": [null, null, null, null, "X", null, null, null, null],
+    "nextBoard": 0,
+    "turn": "O",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "move": { "bi": 0, "ci": 4 },
+  "expected": {
+    "nextBoard": null
+  }
+}

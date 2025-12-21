@@ -1,0 +1,29 @@
+{
+  "description": "All 9 boards decided with no 3-in-a-row -> game is a draw",
+  "comment": "Pattern: X X O / O O X / X X D - verified no winning lines",
+  "state": {
+    "boards": [
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["O", "O", "O", null, null, null, null, null, null],
+      ["O", "O", "O", null, null, null, null, null, null],
+      ["O", "O", "O", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "X", "X", null, null, null, null, null, null],
+      ["X", "O", "X", "X", "O", "O", "O", "X", null]
+    ],
+    "local": ["X", "X", "O", "O", "O", "X", "X", "X", null],
+    "nextBoard": 8,
+    "turn": "X",
+    "result": null,
+    "cubeValue": 1,
+    "cubeOwner": null,
+    "pendingDouble": null
+  },
+  "move": { "bi": 8, "ci": 8 },
+  "expected": {
+    "result": "D",
+    "local_8": "D"
+  }
+}
