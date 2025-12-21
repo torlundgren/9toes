@@ -25,6 +25,8 @@ struct LocalBoardView: View {
         self.onCellTap = onCellTap
     }
 
+    @Environment(\.colorScheme) var colorScheme
+
     public var body: some View {
         ZStack(alignment: .topLeading) {
             // Cell grid
@@ -63,7 +65,8 @@ struct LocalBoardView: View {
                 .padding(6)
         }
         .padding(4)
-        .background(Color(white: 0.92))
+        .aspectRatio(1, contentMode: .fit)
+        .background(colorScheme == .dark ? Color(white: 0.15) : Color(white: 0.92))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)

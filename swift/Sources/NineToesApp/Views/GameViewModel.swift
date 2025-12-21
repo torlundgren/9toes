@@ -58,11 +58,15 @@ public final class GameViewModel {
         return "\(state.turn.rawValue)'s turn"
     }
 
+    public var moveCount: Int {
+        state.boards.flatMap { $0 }.compactMap { $0 }.count
+    }
+
     public var statusLine: String {
         if isGameOver {
             switch state.result {
-            case .player(let p): return "\(p.rawValue) wins!"
-            case .draw: return "Draw!"
+            case .player(let p): return "\(p.rawValue) wins!\n\(moveCount) moves"
+            case .draw: return "Draw!\n\(moveCount) moves"
             case .undecided: return ""
             }
         }
@@ -72,7 +76,7 @@ public final class GameViewModel {
         } else {
             boardInfo = "Any board"
         }
-        return "\(state.turn.rawValue) to move • \(boardInfo)"
+        return "\(state.turn.rawValue) to move\n\(boardInfo) • Move \(moveCount + 1)"
     }
 
     public var isHumanTurn: Bool {
@@ -149,6 +153,11 @@ public final class GameViewModel {
         guard pendingDoubleFromAI else { return }
         state = acceptDouble(state)
         message = nil
+
+        // AI offered the double, so it's still AI's turn - trigger AI move
+        if state.turn == aiSide {
+            triggerAIMove()
+        }
     }
 
     public func declineDoubleFromHuman() {

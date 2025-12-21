@@ -12,11 +12,13 @@ struct CellView: View {
         self.onTap = onTap
     }
 
+    @Environment(\.colorScheme) var colorScheme
+
     public var body: some View {
         Button(action: onTap) {
             ZStack {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white)
+                    .fill(colorScheme == .dark ? Color(white: 0.2) : Color.white)
 
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
