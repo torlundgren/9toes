@@ -266,3 +266,159 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(declined.result, .player(.X))  // Doubler wins
     }
 }
+
+// MARK: - AI Golden Tests (Must Not Blunder)
+
+final class AIGoldenTests: XCTestCase {
+
+    func testAITakesGameWinningMove() throws {
+        let fixture: AIFixture = try loadFixture("ai-must-win-game")
+        let state = fixture.state.toGameState()
+
+        let move = pickMove(state, difficulty: .hard)
+
+        XCTAssertEqual(move, fixture.expectedMove, "AI must take game-winning move")
+    }
+
+    func testAIBlocksOpponentGameWin() throws {
+        let fixture: AIFixture = try loadFixture("ai-must-block-game")
+        let state = fixture.state.toGameState()
+
+        let move = pickMove(state, difficulty: .hard)
+
+        XCTAssertEqual(move, fixture.expectedMove, "AI must block opponent's game-winning move")
+    }
+
+    func testAITakesLocalBoardWin() throws {
+        let fixture: AIFixture = try loadFixture("ai-must-win-local")
+        let state = fixture.state.toGameState()
+
+        let move = pickMove(state, difficulty: .hard)
+
+        XCTAssertEqual(move, fixture.expectedMove, "AI should take local board win")
+    }
+
+    func testAIBlocksLocalWinThreat() throws {
+        let fixture: AIFixture = try loadFixture("ai-must-block-local")
+        let state = fixture.state.toGameState()
+
+        let move = pickMove(state, difficulty: .hard)
+
+        XCTAssertEqual(move, fixture.expectedMove, "AI should block opponent's local win")
+    }
+}
+
+// MARK: - Scoring Snapshot Tests
+
+final class ScoringTests: XCTestCase {
+
+    func testGameWinningMoveScores1000() throws {
+        let fixture: ScoringFixture = try loadFixture("scoring-game-win")
+        let state = fixture.state.toGameState()
+
+        let score = scoreMove(state, fixture.move)
+
+        XCTAssertEqual(score, Double(fixture.expectedScore), "Game-winning move should score 1000")
+    }
+
+    func testCenterScoresHigherThanCorner() {
+        let state = GameState(
+            boards: Array(repeating: Array(repeating: nil, count: 9), count: 9),
+            local: Array(repeating: .undecided, count: 9),
+            nextBoard: 4,
+            turn: .X,
+            result: .undecided,
+            cubeValue: 1,
+            cubeOwner: nil,
+            pendingDouble: nil
+        )
+
+        let centerScore = scoreMove(state, Move(bi: 4, ci: 4))
+        let cornerScore = scoreMove(state, Move(bi: 4, ci: 0))
+
+        XCTAssertGreaterThan(centerScore, cornerScore)
+    }
+
+    func testBlockingLocalWinScoresAtLeast90() {
+        var state = GameState(
+            boards: Array(repeating: Array(repeating: nil, count: 9), count: 9),
+            local: Array(repeating: .undecided, count: 9),
+            nextBoard: 0,
+            turn: .X,
+            result: .undecided,
+            cubeValue: 1,
+            cubeOwner: nil,
+            pendingDouble: nil
+        )
+        // O has 2 in a row on board 0
+        state.boards[0][0] = .O
+        state.boards[0][1] = .O
+
+        let blockScore = scoreMove(state, Move(bi: 0, ci: 2))
+
+        XCTAssertGreaterThanOrEqual(blockScore, 90, "Blocking local win should score at least 90")
+    }
+
+    func testWinningLocalBoardScoresAtLeast100() {
+        var state = GameState(
+            boards: Array(repeating: Array(repeating: nil, count: 9), count: 9),
+            local: Array(repeating: .undecided, count: 9),
+            nextBoard: 0,
+            turn: .X,
+            result: .undecided,
+            cubeValue: 1,
+            cubeOwner: nil,
+            pendingDouble: nil
+        )
+        // X has 2 in a row on board 0
+        state.boards[0][0] = .X
+        state.boards[0][1] = .X
+
+        let winScore = scoreMove(state, Move(bi: 0, ci: 2))
+
+        XCTAssertGreaterThanOrEqual(winScore, 100, "Winning local board should score at least 100")
+    }
+}
+
+// MARK: - AI Basic Tests
+
+final class AITests: XCTestCase {
+
+    func testPickMoveReturnsNilWhenNoMoves() {
+        var state = initialState()
+        state.local = Array(repeating: .draw, count: 9)
+
+        let move = pickMove(state)
+
+        XCTAssertNil(move)
+    }
+
+    func testPickMoveRespectsForcing() {
+        var state = initialState()
+        state.nextBoard = 4
+
+        // Run multiple times to account for randomness
+        for _ in 0..<10 {
+            let move = pickMove(state)
+            XCTAssertEqual(move?.bi, 4, "AI must respect forced board constraint")
+        }
+    }
+
+    func testShouldAcceptDoubleWhenEven() {
+        var state = initialState()
+        state.pendingDouble = .X
+
+        // Even position should accept
+        XCTAssertTrue(shouldAcceptDouble(state))
+    }
+
+    func testShouldDeclineDoubleWhenFarBehind() {
+        var state = initialState()
+        state.pendingDouble = .X
+        // X has won 5 boards - O is far behind
+        state.local = [.player(.X), .player(.X), .player(.X), .player(.X), .player(.X),
+                       .undecided, .undecided, .undecided, .undecided]
+
+        XCTAssertFalse(shouldAcceptDouble(state))
+    }
+}
