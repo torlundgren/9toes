@@ -1,6 +1,7 @@
 import SwiftUI
+import NineToesEngine
 
-public struct BigBoardView: View {
+struct BigBoardView: View {
     @Bindable var viewModel: GameViewModel
 
     public init(viewModel: GameViewModel) {
@@ -8,10 +9,10 @@ public struct BigBoardView: View {
     }
 
     public var body: some View {
-        Grid(horizontalSpacing: 4, verticalSpacing: 4) {
-            ForEach(0..<3) { row in
+        Grid(horizontalSpacing: 2, verticalSpacing: 2) {
+            ForEach(0..<3, id: \.self) { row in
                 GridRow {
-                    ForEach(0..<3) { col in
+                    ForEach(0..<3, id: \.self) { col in
                         let bi = row * 3 + col
                         LocalBoardView(
                             boardIndex: bi,
@@ -29,8 +30,12 @@ public struct BigBoardView: View {
                 }
             }
         }
-        .padding(8)
-        .background(Color.black.opacity(0.8))
+        .padding(4)
+        .background(Color.gray.opacity(0.4))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+        )
     }
 }

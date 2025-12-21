@@ -1,10 +1,11 @@
 import SwiftUI
+import NineToesEngine
 
 // Entry point for standalone app usage.
 // To use: create an Xcode project and add this as the @main App,
 // or uncomment @main below for swift run.
 //
-// @main
+@main
 public struct NineToesApp: App {
     public init() {}
 

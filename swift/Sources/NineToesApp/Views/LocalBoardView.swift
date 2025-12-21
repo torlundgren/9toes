@@ -1,6 +1,7 @@
 import SwiftUI
+import NineToesEngine
 
-public struct LocalBoardView: View {
+struct LocalBoardView: View {
     let boardIndex: Int
     let cells: [Cell]
     let result: LocalResult
@@ -25,12 +26,12 @@ public struct LocalBoardView: View {
     }
 
     public var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             // Cell grid
             Grid(horizontalSpacing: 1, verticalSpacing: 1) {
-                ForEach(0..<3) { row in
+                ForEach(0..<3, id: \.self) { row in
                     GridRow {
-                        ForEach(0..<3) { col in
+                        ForEach(0..<3, id: \.self) { col in
                             let ci = row * 3 + col
                             CellView(
                                 cell: cells[ci],
@@ -54,9 +55,20 @@ public struct LocalBoardView: View {
                         .foregroundStyle(.white)
                 }
             }
+
+            // Board number
+            Text("\(boardIndex + 1)")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color.gray.opacity(0.5))
+                .padding(6)
         }
-        .background(isActive ? Color.yellow.opacity(0.2) : Color.gray.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .padding(4)
+        .background(Color(white: 0.92))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isActive ? Color.blue.opacity(0.6) : Color.gray.opacity(0.3), lineWidth: isActive ? 2 : 1)
+        )
     }
 
     private var overlayColor: Color {

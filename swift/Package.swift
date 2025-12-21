@@ -12,10 +12,18 @@ let package = Package(
             name: "NineToesEngine",
             targets: ["NineToesEngine"]
         ),
+        .executable(
+            name: "NineToesApp",
+            targets: ["NineToesApp"]
+        ),
     ],
     targets: [
         .target(
             name: "NineToesEngine"
+        ),
+        .executableTarget(
+            name: "NineToesApp",
+            dependencies: ["NineToesEngine"]
         ),
         .testTarget(
             name: "NineToesEngineTests",

@@ -1,6 +1,7 @@
 import SwiftUI
+import NineToesEngine
 
-public struct CellView: View {
+struct CellView: View {
     let cell: Cell
     let isPlayable: Bool
     let onTap: () -> Void
@@ -14,8 +15,11 @@ public struct CellView: View {
     public var body: some View {
         Button(action: onTap) {
             ZStack {
-                Rectangle()
-                    .fill(isPlayable ? Color.blue.opacity(0.1) : Color.clear)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.white)
+
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
 
                 if let player = cell {
                     Text(player.rawValue)
