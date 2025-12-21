@@ -6,6 +6,8 @@ import {
   evalWinner9,
   getWinningLineIndex,
   initialState,
+  isLegalMove,
+  legalMoves,
   other,
   type LocalResult,
   type Player,
@@ -83,12 +85,35 @@ describe("engine", () => {
     expect(state.result).toBeNull();
     expect(state.nextBoard).toBeNull();
     expect(state.local).toHaveLength(9);
-    expect(state.winLines).toHaveLength(9);
     expect(state.boards).toHaveLength(9);
     expect(state.boards.every((b) => b.length === 9 && b.every((c) => c === null))).toBe(
       true
     );
     expect(state.local.every((r) => r === null)).toBe(true);
-    expect(state.winLines.every((r) => r === null)).toBe(true);
+    expect(state.cubeValue).toBe(1);
+    expect(state.cubeOwner).toBeNull();
+    expect(state.pendingDouble).toBeNull();
+  });
+
+  it("lists legal moves based on nextBoard", () => {
+    const state = initialState();
+    state.nextBoard = 4;
+    const moves = legalMoves(state);
+    expect(moves.length).toBe(9);
+    expect(moves.every((m) => m.bi === 4)).toBe(true);
+  });
+
+  it("rejects illegal moves for decided board or occupied cell", () => {
+    const state = initialState();
+    state.local[2] = "X";
+    state.boards[0][0] = "O";
+    expect(isLegalMove(state, { bi: 2, ci: 0 })).toBe(false);
+    expect(isLegalMove(state, { bi: 0, ci: 0 })).toBe(false);
+  });
+
+  it("rejects illegal moves when forced to another board", () => {
+    const state = initialState();
+    state.nextBoard = 3;
+    expect(isLegalMove(state, { bi: 0, ci: 1 })).toBe(false);
   });
 });

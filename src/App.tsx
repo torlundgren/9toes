@@ -7,6 +7,7 @@ import {
   initialState,
   isLegalMove,
   other,
+  type Player,
 } from "./game/engine";
 import { generateCommentary, pickMove, shouldAcceptDouble, shouldDouble } from "./game/ai";
 import { acceptDouble, applyMove, declineDouble, offerDouble } from "./game/state";
@@ -80,6 +81,8 @@ export default function App() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [vsAI, setVsAI] = useState(true);
   const [useCube, setUseCube] = useState(false);
+  const [sideChoice, setSideChoice] = useState<"X" | "O" | "R">("X");
+  const [playerSide, setPlayerSide] = useState<Player | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const [stats, setStats] = useState<Stats>(loadStats);
   const [gameRecorded, setGameRecorded] = useState(false);
@@ -114,11 +117,15 @@ export default function App() {
   }, [state, history, replayIndex]);
 
   const isReplaying = replayIndex !== null;
+  const hasStarted = history.length > 0;
+  const aiSide = vsAI && playerSide ? (playerSide === "X" ? "O" : "X") : null;
+  const needsSideSelect = vsAI && playerSide === null && !hasStarted && !isReplaying;
 
   // Auto-play effect for replay
   useEffect(() => {
     if (!autoPlay || !isReplaying) return;
     if (replayIndex === history.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAutoPlay(false);
       return;
     }
@@ -142,6 +149,7 @@ export default function App() {
     if (!state.result || gameRecorded) return;
 
     const points = useCube ? state.cubeValue : 1;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStats((prev) => {
       const next = {
         games: prev.games + 1,
@@ -161,6 +169,7 @@ export default function App() {
     if (isReplaying) {
       return `Replay: Move ${replayIndex} of ${history.length}`;
     }
+    if (needsSideSelect) return "Choose a side to start.";
     if (state.result === "X" || state.result === "O") return `${state.result} wins!`;
     if (state.result === "D") return `Draw.`;
     if (state.pendingDouble) {
@@ -170,11 +179,12 @@ export default function App() {
     if (aiThinking) return "AI thinking...";
     const forced = state.nextBoard === null ? "Any board" : `Board ${state.nextBoard + 1}`;
     return `${state.turn} to move • ${forced}`;
-  }, [state.result, state.turn, state.nextBoard, state.pendingDouble, aiThinking, isReplaying, replayIndex, history.length]);
+  }, [state.result, state.turn, state.nextBoard, state.pendingDouble, aiThinking, isReplaying, replayIndex, history.length, needsSideSelect]);
 
   function cellClickable(bi: number, ci: number): boolean {
+    if (needsSideSelect) return false;
     // Block clicks during AI turn
-    if (vsAI && state.turn === "O" && !state.result) return false;
+    if (aiSide && state.turn === aiSide && !state.result) return false;
     // Block clicks when there's a pending double
     if (state.pendingDouble) return false;
     return isLegalMove(state, { bi, ci });
@@ -195,7 +205,7 @@ export default function App() {
     setState(newState);
 
     // Generate AI commentary on player's move (only in vs AI mode)
-    if (vsAI && prevState.turn === "X") {
+    if (vsAI && playerSide && prevState.turn === playerSide) {
       const comment = generateCommentary(prevState, newState, move);
       if (comment) {
         setCommentary(comment);
@@ -221,10 +231,25 @@ export default function App() {
   function restart() {
     setState(initialState());
     setHistory([]);
+    setPlayerSide(null);
     setGameRecorded(false);
     setShowVictory(true);
     setReplayIndex(null);
     setAutoPlay(false);
+    setAiThinking(false);
+  }
+
+  function startGame() {
+    const chosen =
+      sideChoice === "R" ? (Math.random() < 0.5 ? "X" : "O") : sideChoice;
+    setPlayerSide(chosen);
+    setState(initialState());
+    setHistory([]);
+    setGameRecorded(false);
+    setShowVictory(true);
+    setReplayIndex(null);
+    setAutoPlay(false);
+    setAiThinking(false);
   }
 
   function startReplay() {
@@ -253,9 +278,11 @@ export default function App() {
   useEffect(() => {
     if (!vsAI) return;
     if (state.result) return;
+    if (!aiSide) return;
 
     // AI responds to player's double
-    if (state.pendingDouble === "X") {
+    if (playerSide && state.pendingDouble === playerSide) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiThinking(true);
       const timer = setTimeout(() => {
         if (shouldAcceptDouble(state)) {
@@ -269,7 +296,7 @@ export default function App() {
     }
 
     // AI's turn to move (or potentially double)
-    if (state.turn !== "O") return;
+    if (state.turn !== aiSide) return;
 
     setAiThinking(true);
 
@@ -293,7 +320,7 @@ export default function App() {
     }, 400 + Math.random() * 300);
 
     return () => clearTimeout(timer);
-  }, [vsAI, state, useCube]);
+  }, [vsAI, aiSide, playerSide, state, useCube]);
 
   // Compute winLines for display (UI-only concern)
   const getWinLine = (bi: number): number | null => {
@@ -347,86 +374,119 @@ export default function App() {
         </div>
       )}
 
-      <main className="boardWrap" aria-label="Ultimate Tic-Tac-Toe Board">
-        <div className="bigGrid">
-          {displayState.boards.map((board, bi) => {
-            const playable = !isReplaying && !state.result && isLegalMove(state, { bi, ci: board.findIndex(c => c === null) >= 0 ? board.findIndex(c => c === null) : 0 }) && (state.nextBoard === null || state.nextBoard === bi);
+      {needsSideSelect ? (
+        <section className="startPanel" aria-label="Choose side to start">
+          <div className="startCard">
+            <div className="startTitle">Start Game</div>
+            <div className="startSubtitle">Pick your side before the first move.</div>
+            <div className="startOptions">
+              <button
+                className={`btn startOption ${sideChoice === "X" ? "btnActive" : ""}`}
+                onClick={() => setSideChoice("X")}
+              >
+                Play as X
+              </button>
+              <button
+                className={`btn startOption ${sideChoice === "O" ? "btnActive" : ""}`}
+                onClick={() => setSideChoice("O")}
+              >
+                Play as O
+              </button>
+              <button
+                className={`btn startOption ${sideChoice === "R" ? "btnActive" : ""}`}
+                onClick={() => setSideChoice("R")}
+              >
+                Random
+              </button>
+            </div>
+            <button className="btn startBtn" onClick={startGame}>
+              Start Game
+            </button>
+          </div>
+        </section>
+      ) : (
+        <>
+          <main className="boardWrap" aria-label="Ultimate Tic-Tac-Toe Board">
+            <div className="bigGrid">
+              {displayState.boards.map((board, bi) => {
             const decided = displayState.local[bi];
             const winLine = getWinLine(bi);
             const cls = [
-              "smallBoard",
-              !isReplaying && !state.result && state.local[bi] === null && (state.nextBoard === null || state.nextBoard === bi) ? "playable" : "dim",
-              decided ? "decided" : "",
-            ].join(" ");
+                  "smallBoard",
+                  !isReplaying && !state.result && state.local[bi] === null && (state.nextBoard === null || state.nextBoard === bi) ? "playable" : "dim",
+                  decided ? "decided" : "",
+                ].join(" ");
 
-            return (
-              <div key={bi} className={cls} role="group" aria-label={`Local board ${bi + 1}`}>
-                <div className="boardLabel">{bi + 1}</div>
-                <div className="smallGrid">
-                  {board.map((cell, ci) => {
-                    const click = () => handleMove(bi, ci);
-                    const isClick = !isReplaying && cellClickable(bi, ci);
-                    return (
-                      <button
-                        key={ci}
-                        className={`cell ${isClick ? "cellActive" : ""}`}
-                        onClick={click}
-                        disabled={!isClick || isReplaying}
-                        aria-label={`Board ${bi + 1}, cell ${ci + 1}`}
-                      >
-                        {cell ?? ""}
-                      </button>
-                    );
-                  })}
-                </div>
+                return (
+                  <div key={bi} className={cls} role="group" aria-label={`Local board ${bi + 1}`}>
+                    <div className="boardLabel">{bi + 1}</div>
+                    <div className="smallGrid">
+                      {board.map((cell, ci) => {
+                        const click = () => handleMove(bi, ci);
+                        const isClick = !isReplaying && cellClickable(bi, ci);
+                        return (
+                          <button
+                            key={ci}
+                            className={`cell ${isClick ? "cellActive" : ""}`}
+                            onClick={click}
+                            disabled={!isClick || isReplaying}
+                            aria-label={`Board ${bi + 1}, cell ${ci + 1}`}
+                          >
+                            {cell ?? ""}
+                          </button>
+                        );
+                      })}
+                    </div>
 
-                {decided && (
-                  <div className={`overlay overlay${decided}`} aria-label="Local board result">
-                    {winLine !== null && (
-                      <div className={`winLine winLine${winLine}`} />
+                    {decided && (
+                      <div className={`overlay overlay${decided}`} aria-label="Local board result">
+                        {winLine !== null && (
+                          <div className={`winLine winLine${winLine}`} />
+                        )}
+                        <div className="overlayMark">{decided === "D" ? "–" : decided}</div>
+                      </div>
                     )}
-                    <div className="overlayMark">{decided === "D" ? "–" : decided}</div>
                   </div>
-                )}
+                );
+              })}
+            </div>
+          </main>
+
+          {/* Doubling cube */}
+          {useCube && !isReplaying && (
+            <div className="cubeArea">
+              <div className={`cube ${state.cubeOwner ? `cube${state.cubeOwner}` : "cubeCentered"}`}>
+                <span className="cubeValue">{state.cubeValue}</span>
+                {state.cubeOwner && <span className="cubeOwner">{state.cubeOwner}</span>}
               </div>
-            );
-          })}
-        </div>
-      </main>
-
-      {/* Doubling cube */}
-      {useCube && !isReplaying && (
-        <div className="cubeArea">
-          <div className={`cube ${state.cubeOwner ? `cube${state.cubeOwner}` : "cubeCentered"}`}>
-            <span className="cubeValue">{state.cubeValue}</span>
-            {state.cubeOwner && <span className="cubeOwner">{state.cubeOwner}</span>}
-          </div>
-          {/* Double button for human player */}
-          {!state.result && !state.pendingDouble && state.turn === "X" && canDouble(state) && (
-            <button className="btn cubeBtn" onClick={handleDouble}>
-              Double to {state.cubeValue * 2}
-            </button>
+              {/* Double button for human player */}
+              {!state.result && !state.pendingDouble && canDouble(state) && (!vsAI || (playerSide && state.turn === playerSide)) && (
+                <button className="btn cubeBtn" onClick={handleDouble}>
+                  Double to {state.cubeValue * 2}
+                </button>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {/* Pending double - human must respond */}
-      {state.pendingDouble && (vsAI ? state.pendingDouble === "O" : true) && (
-        <div className="doubleOverlay">
-          <div className="doubleDialog">
-            <div className={`doubleTitle doubleTitle${state.pendingDouble}`}>
-              {state.pendingDouble} doubles to {state.cubeValue * 2}!
+          {/* Pending double - human must respond */}
+          {state.pendingDouble && (vsAI ? aiSide && state.pendingDouble === aiSide : true) && (
+            <div className="doubleOverlay">
+              <div className="doubleDialog">
+                <div className={`doubleTitle doubleTitle${state.pendingDouble}`}>
+                  {state.pendingDouble} doubles to {state.cubeValue * 2}!
+                </div>
+                <div className="doubleButtons">
+                  <button className="btn doubleBtn doubleBtnAccept" onClick={handleAcceptDouble}>
+                    Accept
+                  </button>
+                  <button className="btn doubleBtn doubleBtnDecline" onClick={handleDeclineDouble}>
+                    Decline ({state.pendingDouble} wins {state.cubeValue})
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="doubleButtons">
-              <button className="btn doubleBtn doubleBtnAccept" onClick={handleAcceptDouble}>
-                Accept
-              </button>
-              <button className="btn doubleBtn doubleBtnDecline" onClick={handleDeclineDouble}>
-                Decline ({state.pendingDouble} wins {state.cubeValue})
-              </button>
-            </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
 
       {/* Victory overlay */}

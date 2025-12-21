@@ -226,16 +226,6 @@ export function shouldAcceptDouble(state: GameState): boolean {
 // AI Commentary
 // ─────────────────────────────────────────────────────────────
 
-type CommentaryContext = {
-  moveScore: number;
-  bestScore: number;
-  worstScore: number;
-  wonLocalBoard: boolean;
-  blockedWin: boolean;
-  positionBefore: number;
-  positionAfter: number;
-};
-
 const GOOD_MOVE_COMMENTS = [
   "Nice move!",
   "Well played.",
