@@ -221,3 +221,171 @@ export function shouldAcceptDouble(state: GameState): boolean {
   const threshold = -40 + state.cubeValue;
   return positionScore > threshold;
 }
+
+// ─────────────────────────────────────────────────────────────
+// AI Commentary
+// ─────────────────────────────────────────────────────────────
+
+type CommentaryContext = {
+  moveScore: number;
+  bestScore: number;
+  worstScore: number;
+  wonLocalBoard: boolean;
+  blockedWin: boolean;
+  positionBefore: number;
+  positionAfter: number;
+};
+
+const GOOD_MOVE_COMMENTS = [
+  "Nice move!",
+  "Well played.",
+  "I see what you did there.",
+  "Clever!",
+  "Good choice.",
+  "Solid move.",
+  "I would've done the same.",
+  "Strong play!",
+];
+
+const GREAT_MOVE_COMMENTS = [
+  "Excellent move!",
+  "Impressive!",
+  "I didn't see that coming!",
+  "Wow, nice one!",
+  "That's a strong play.",
+  "You're making this tough.",
+];
+
+const BAD_MOVE_COMMENTS = [
+  "Interesting choice...",
+  "Hmm, are you sure?",
+  "Bold strategy.",
+  "That's... unexpected.",
+  "I wouldn't have done that.",
+  "Okay then!",
+  "If you say so...",
+];
+
+const BLUNDER_COMMENTS = [
+  "Oh no...",
+  "That might be a mistake.",
+  "Are you feeling okay?",
+  "I'll take it!",
+  "Thanks for that!",
+  "You sure about that?",
+];
+
+const LOCAL_WIN_COMMENTS = [
+  "Nice, you got that board!",
+  "Well done on that one.",
+  "One for you.",
+  "You claimed that board.",
+];
+
+const BLOCK_COMMENTS = [
+  "Good block!",
+  "You saw that coming.",
+  "Nice defensive play.",
+  "Denied!",
+];
+
+const AI_WINNING_COMMENTS = [
+  "I'm feeling good about this.",
+  "Things are going my way.",
+  "I like my position here.",
+];
+
+const AI_LOSING_COMMENTS = [
+  "You're playing well!",
+  "I'm in trouble here.",
+  "Okay, you've got the edge.",
+];
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/** Generate AI commentary on the player's move */
+export function generateCommentary(
+  stateBefore: GameState,
+  stateAfter: GameState,
+  move: Move
+): string | null {
+  // Only comment ~30% of the time to avoid being annoying
+  if (Math.random() > 0.35) return null;
+
+  const player = stateBefore.turn;
+  const moves = legalMoves(stateBefore);
+  if (moves.length === 0) return null;
+
+  // Score all moves to evaluate this one
+  const scored = moves.map((m) => ({
+    move: m,
+    score: scoreMove(stateBefore, m),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+
+  const bestScore = scored[0].score;
+  const worstScore = scored[scored.length - 1].score;
+  const thisMove = scored.find((s) => s.move.bi === move.bi && s.move.ci === move.ci);
+  const moveScore = thisMove?.score ?? 0;
+  const moveRank = scored.findIndex((s) => s.move.bi === move.bi && s.move.ci === move.ci);
+
+  // Check if player won a local board
+  const wonLocalBoard = stateBefore.local[move.bi] === null &&
+    (stateAfter.local[move.bi] === player);
+
+  // Check if player blocked AI from winning a local board
+  const aiPlayer = other(player);
+  const boardCopy = stateBefore.boards[move.bi].slice();
+  boardCopy[move.ci] = aiPlayer;
+  const blockedWin = evalWinner9(boardCopy) === aiPlayer;
+
+  // Position evaluation
+  const positionBefore = evaluatePosition(stateBefore, aiPlayer);
+  const positionAfter = evaluatePosition(stateAfter, aiPlayer);
+
+  const scoreRange = bestScore - worstScore;
+  const scoreFromBest = bestScore - moveScore;
+  const isTopMove = moveRank <= 2 || scoreFromBest < 10;
+  const isGoodMove = scoreFromBest < scoreRange * 0.3;
+  const isBadMove = scoreFromBest > scoreRange * 0.6;
+  const isBlunder = scoreFromBest > scoreRange * 0.8 && scoreRange > 30;
+
+  // Prioritize specific events
+  if (wonLocalBoard) {
+    return pick(LOCAL_WIN_COMMENTS);
+  }
+
+  if (blockedWin && Math.random() > 0.5) {
+    return pick(BLOCK_COMMENTS);
+  }
+
+  // Comment on move quality
+  if (isBlunder && scoreRange > 20) {
+    return pick(BLUNDER_COMMENTS);
+  }
+
+  if (isBadMove && scoreRange > 15) {
+    return pick(BAD_MOVE_COMMENTS);
+  }
+
+  if (isTopMove && bestScore > 50) {
+    return pick(GREAT_MOVE_COMMENTS);
+  }
+
+  if (isGoodMove) {
+    return pick(GOOD_MOVE_COMMENTS);
+  }
+
+  // Comment on position change
+  if (positionAfter < positionBefore - 20) {
+    return pick(AI_LOSING_COMMENTS);
+  }
+
+  if (positionAfter > positionBefore + 20) {
+    return pick(AI_WINNING_COMMENTS);
+  }
+
+  return null;
+}

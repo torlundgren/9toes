@@ -8,7 +8,7 @@ import {
   isLegalMove,
   other,
 } from "./game/engine";
-import { pickMove, shouldAcceptDouble, shouldDouble } from "./game/ai";
+import { generateCommentary, pickMove, shouldAcceptDouble, shouldDouble } from "./game/ai";
 import { acceptDouble, applyMove, declineDouble, offerDouble } from "./game/state";
 
 // History stores snapshots of game state before each move
@@ -87,12 +87,20 @@ export default function App() {
   const [replayIndex, setReplayIndex] = useState<number | null>(null);
   const [autoPlay, setAutoPlay] = useState(false);
   const [theme, setTheme] = useState<Theme>(loadTheme);
+  const [commentary, setCommentary] = useState<string | null>(null);
 
   // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     saveTheme(theme);
   }, [theme]);
+
+  // Auto-dismiss commentary after 3 seconds
+  useEffect(() => {
+    if (!commentary) return;
+    const timer = setTimeout(() => setCommentary(null), 3000);
+    return () => clearTimeout(timer);
+  }, [commentary]);
 
   function toggleTheme() {
     setTheme((t) => (t === "dark" ? "light" : "dark"));
@@ -179,10 +187,20 @@ export default function App() {
   function handleMove(bi: number, ci: number) {
     if (!cellClickable(bi, ci)) return;
 
-    setState((prev) => {
-      pushHistory(prev);
-      return applyMove(prev, { bi, ci });
-    });
+    const move = { bi, ci };
+    const prevState = state;
+    const newState = applyMove(prevState, move);
+
+    pushHistory(prevState);
+    setState(newState);
+
+    // Generate AI commentary on player's move (only in vs AI mode)
+    if (vsAI && prevState.turn === "X") {
+      const comment = generateCommentary(prevState, newState, move);
+      if (comment) {
+        setCommentary(comment);
+      }
+    }
   }
 
   function handleDouble() {
@@ -321,6 +339,13 @@ export default function App() {
         <span className="statItem statO">O: {stats.oWins}{useCube && ` (${stats.oPoints}pts)`}</span>
         <span className="statItem">Draws: {stats.draws}</span>
       </div>
+
+      {/* AI Commentary */}
+      {commentary && (
+        <div className="commentary" onClick={() => setCommentary(null)}>
+          <span className="commentaryText">{commentary}</span>
+        </div>
+      )}
 
       <main className="boardWrap" aria-label="Ultimate Tic-Tac-Toe Board">
         <div className="bigGrid">

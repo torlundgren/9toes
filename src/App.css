@@ -657,3 +657,60 @@
 .doubleBtnDecline:hover {
   background: rgba(239, 68, 68, 0.3);
 }
+
+/* AI Commentary */
+.commentary {
+  position: fixed;
+  right: 24px;
+  top: 120px;
+  background: var(--o-color);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  max-width: 200px;
+  cursor: pointer;
+  animation: commentarySlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  z-index: 50;
+}
+
+.commentary::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid var(--o-color);
+}
+
+@keyframes commentarySlide {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.commentaryText {
+  display: inline-block;
+}
+
+/* Mobile: show commentary at top */
+@media (max-width: 900px) {
+  .commentary {
+    position: static;
+    max-width: none;
+    margin-bottom: 12px;
+  }
+
+  .commentary::before {
+    display: none;
+  }
+}
