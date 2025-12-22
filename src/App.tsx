@@ -99,6 +99,8 @@ export default function App() {
   const [commentary, setCommentary] = useState<string | null>(null);
   const [lastAiMove, setLastAiMove] = useState<{ bi: number; ci: number } | null>(null);
   const [aiTargetBoard, setAiTargetBoard] = useState<number | null>(null);
+  const [matchTarget, setMatchTarget] = useState<number | null>(null); // null = single game, 7 = first to 7
+  const [matchScore, setMatchScore] = useState({ human: 0, ai: 0 });
 
   // Apply theme to document
   useEffect(() => {
@@ -173,8 +175,15 @@ export default function App() {
       saveStats(next);
       return next;
     });
+    // Update match score
+    if (matchTarget) {
+      setMatchScore((prev) => ({
+        human: prev.human + (humanWon ? points : 0),
+        ai: prev.ai + (aiWon ? points : 0),
+      }));
+    }
     setGameRecorded(true);
-  }, [state.result, gameRecorded, state.cubeValue, useCube, vsAI, playerSide, aiSide]);
+  }, [state.result, gameRecorded, state.cubeValue, useCube, vsAI, playerSide, aiSide, matchTarget]);
 
   const status = useMemo(() => {
     if (isReplaying) {
@@ -254,6 +263,18 @@ export default function App() {
     const chosen =
       sideChoice === "R" ? (Math.random() < 0.5 ? "X" : "O") : sideChoice;
     setPlayerSide(chosen);
+    setState(initialState());
+    setHistory([]);
+    setGameRecorded(false);
+    setShowVictory(true);
+    setReplayIndex(null);
+    setAutoPlay(false);
+    setAiThinking(false);
+    setMatchScore({ human: 0, ai: 0 }); // Reset match score
+  }
+
+  // Start next game in a match (keep same sides and settings)
+  function nextMatchGame() {
     setState(initialState());
     setHistory([]);
     setGameRecorded(false);
@@ -383,12 +404,20 @@ export default function App() {
         </div>
       </header>
 
-      <div className="statsBar">
-        <span className="statItem">Games: {stats.games}</span>
-        <span className="statItem statHuman">You: {stats.humanWins}{useCube && ` (${stats.humanPoints}pts)`}</span>
-        <span className="statItem statAI">AI: {stats.aiWins}{useCube && ` (${stats.aiPoints}pts)`}</span>
-        <span className="statItem">Draws: {stats.draws}</span>
-      </div>
+      {matchTarget ? (
+        <div className="statsBar matchBar">
+          <span className="matchTitle">Match to {matchTarget}</span>
+          <span className="statItem statHuman">You: {matchScore.human}</span>
+          <span className="statItem statAI">AI: {matchScore.ai}</span>
+        </div>
+      ) : (
+        <div className="statsBar">
+          <span className="statItem">Games: {stats.games}</span>
+          <span className="statItem statHuman">You: {stats.humanWins}{useCube && ` (${stats.humanPoints}pts)`}</span>
+          <span className="statItem statAI">AI: {stats.aiWins}{useCube && ` (${stats.aiPoints}pts)`}</span>
+          <span className="statItem">Draws: {stats.draws}</span>
+        </div>
+      )}
 
       {/* AI Commentary */}
       {commentary && (
@@ -457,6 +486,40 @@ export default function App() {
             </div>
 
             <div className="startSection">
+              <div className="startSectionTitle">Mode</div>
+              <div className="startOptions startOptions4">
+                <button
+                  className={`optionCard ${matchTarget === null ? "selected" : ""}`}
+                  onClick={() => setMatchTarget(null)}
+                >
+                  <span className="optionEmoji">🎮</span>
+                  <span className="optionLabel">Single</span>
+                </button>
+                <button
+                  className={`optionCard ${matchTarget === 5 ? "selected" : ""}`}
+                  onClick={() => setMatchTarget(5)}
+                >
+                  <span className="optionIcon">5</span>
+                  <span className="optionLabel">First to 5</span>
+                </button>
+                <button
+                  className={`optionCard ${matchTarget === 7 ? "selected" : ""}`}
+                  onClick={() => setMatchTarget(7)}
+                >
+                  <span className="optionIcon">7</span>
+                  <span className="optionLabel">First to 7</span>
+                </button>
+                <button
+                  className={`optionCard ${matchTarget === 11 ? "selected" : ""}`}
+                  onClick={() => setMatchTarget(11)}
+                >
+                  <span className="optionIcon">11</span>
+                  <span className="optionLabel">First to 11</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="startSection">
               <div className="startSectionTitle">Options</div>
               <button
                 className={`optionToggle ${useCube ? "selected" : ""}`}
@@ -474,7 +537,7 @@ export default function App() {
             </div>
 
             <button className="startCta" onClick={startGame}>
-              Start Game
+              {matchTarget ? `Start Match to ${matchTarget}` : "Start Game"}
             </button>
           </div>
         </section>
@@ -537,20 +600,28 @@ export default function App() {
           </main>
 
           {/* Doubling cube */}
-          {useCube && !isReplaying && (
-            <div className="cubeArea">
-              <div className={`cube ${state.cubeOwner ? `cube${state.cubeOwner}` : "cubeCentered"}`}>
-                <span className="cubeValue">{state.cubeValue}</span>
-                {state.cubeOwner && <span className="cubeOwner">{state.cubeOwner}</span>}
+          {useCube && !isReplaying && (() => {
+            // Determine cube position: player (bottom), opponent (top), or center (no owner)
+            const cubePosition = state.cubeOwner === null
+              ? "cubeCenter"
+              : state.cubeOwner === playerSide
+                ? "cubePlayer"
+                : "cubeOpponent";
+            return (
+              <div className={`cubeArea ${cubePosition}`}>
+                <div className={`cube ${state.cubeOwner ? `cube${state.cubeOwner}` : "cubeCentered"}`}>
+                  <span className="cubeValue">{state.cubeValue}</span>
+                  {state.cubeOwner && <span className="cubeOwner">{state.cubeOwner}</span>}
+                </div>
+                {/* Double button for human player */}
+                {!state.result && !state.pendingDouble && canDouble(state) && (!vsAI || (playerSide && state.turn === playerSide)) && (
+                  <button className="btn cubeBtn" onClick={handleDouble}>
+                    Double to {state.cubeValue * 2}
+                  </button>
+                )}
               </div>
-              {/* Double button for human player */}
-              {!state.result && !state.pendingDouble && canDouble(state) && (!vsAI || (playerSide && state.turn === playerSide)) && (
-                <button className="btn cubeBtn" onClick={handleDouble}>
-                  Double to {state.cubeValue * 2}
-                </button>
-              )}
-            </div>
-          )}
+            );
+          })()}
 
           {/* Pending double - human must respond */}
           {state.pendingDouble && (vsAI ? aiSide && state.pendingDouble === aiSide : true) && (
@@ -574,7 +645,22 @@ export default function App() {
       )}
 
       {/* Victory overlay */}
-      {(state.result === "X" || state.result === "O") && showVictory && (
+      {(state.result === "X" || state.result === "O") && showVictory && (() => {
+        const humanWon = vsAI && state.result === playerSide;
+        const aiWon = vsAI && state.result === aiSide;
+        const points = useCube ? state.cubeValue : 1;
+        // Calculate match score including this game (only add if not yet recorded to avoid double-counting)
+        const newHumanScore = matchScore.human + (gameRecorded ? 0 : (humanWon ? points : 0));
+        const newAiScore = matchScore.ai + (gameRecorded ? 0 : (aiWon ? points : 0));
+        const humanWonMatch = matchTarget && newHumanScore >= matchTarget;
+        const aiWonMatch = matchTarget && newAiScore >= matchTarget;
+        const matchWon = humanWonMatch || aiWonMatch;
+
+        const winnerLabel = matchWon
+          ? (humanWonMatch ? "You Win the Match!" : "AI Wins the Match!")
+          : (humanWon ? "You Win!" : aiWon ? "AI Wins!" : `${state.result} Wins!`);
+
+        return (
         <div className="victoryOverlay">
           <div className="confetti">
             {Array.from({ length: 50 }).map((_, i) => (
@@ -587,8 +673,18 @@ export default function App() {
             ))}
           </div>
           <div className={`victoryText victory${state.result}`}>
-            {state.result} wins{useCube && state.cubeValue > 1 ? ` (${state.cubeValue} pts)` : ""}!
+            {winnerLabel}
           </div>
+          {matchTarget && (
+            <div className="victoryMatchScore">
+              Match Score: You {newHumanScore} – {newAiScore} AI (first to {matchTarget})
+            </div>
+          )}
+          {useCube && state.cubeValue > 1 && (
+            <div className="victoryExplain">
+              The doubling cube was at {state.cubeValue}, so this game is worth {state.cubeValue} victory points.
+            </div>
+          )}
           <div className="victoryButtons">
             <button className="btn victoryBtn" onClick={() => setShowVictory(false)}>
               View Board
@@ -596,12 +692,19 @@ export default function App() {
             <button className="btn victoryBtn" onClick={startReplay}>
               Replay
             </button>
-            <button className="btn victoryBtn victoryBtnPrimary" onClick={restart}>
-              Play Again
-            </button>
+            {matchTarget && !matchWon ? (
+              <button className="btn victoryBtn victoryBtnPrimary" onClick={nextMatchGame}>
+                Next Game
+              </button>
+            ) : (
+              <button className="btn victoryBtn victoryBtnPrimary" onClick={restart}>
+                {matchTarget ? "New Match" : "Play Again"}
+              </button>
+            )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Replay controls */}
       {isReplaying && (

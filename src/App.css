@@ -104,6 +104,17 @@
   margin-bottom: 12px;
 }
 
+.matchBar {
+  opacity: 1;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.matchTitle {
+  font-weight: 700;
+  color: var(--accent);
+}
+
 .statItem {
   display: flex;
   gap: 4px;
@@ -159,6 +170,19 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+.startOptions4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.startOptions4 .optionCard {
+  padding: 12px 4px;
+}
+
+.startOptions4 .optionLabel {
+  font-size: 0.7rem;
 }
 
 .optionCard {
@@ -309,7 +333,7 @@
 .themeToggle {
   position: fixed;
   bottom: 16px;
-  left: 16px;
+  right: 16px;
   width: 44px;
   height: 44px;
   padding: 0;
@@ -608,6 +632,22 @@
   text-shadow: 0 0 60px var(--o-color), 0 4px 30px var(--shadow);
 }
 
+.victoryMatchScore {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  animation: fadeIn 0.4s ease 0.15s both;
+}
+
+.victoryExplain {
+  font-size: 1rem;
+  opacity: 0.8;
+  max-width: 300px;
+  text-align: center;
+  line-height: 1.4;
+  animation: fadeIn 0.5s ease 0.2s both;
+}
+
 .victoryButtons {
   display: flex;
   gap: 12px;
@@ -730,19 +770,37 @@
 /* Doubling Cube */
 .cubeArea {
   position: fixed;
-  left: 24px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  transition: top 0.4s ease, bottom 0.4s ease, transform 0.4s ease;
+}
+
+/* Center position - cube not yet used */
+.cubeArea.cubeCenter {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Player position - bottom */
+.cubeArea.cubePlayer {
+  top: auto;
+  bottom: 100px;
+  transform: none;
+}
+
+/* Opponent position - top */
+.cubeArea.cubeOpponent {
+  top: 100px;
+  transform: none;
 }
 
 @media (max-width: 900px) {
   .cubeArea {
     position: static;
-    transform: none;
+    transform: none !important;
     flex-direction: row;
     margin-top: 16px;
   }
