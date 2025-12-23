@@ -10,6 +10,7 @@ import {
   type GameState,
   type Move,
   type Player,
+  type Variant,
 } from "./engine";
 
 // ─────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ function countInLine(cells: Cell[], line: number[], player: Player): number {
 }
 
 /** Score a potential move using heuristics (exported for golden tests) */
-export function scoreMove(state: GameState, move: Move): number {
+export function scoreMove(state: GameState, move: Move, variant: Variant = "classic"): number {
   const { bi, ci } = move;
   const { boards, local, turn } = state;
   const opp = other(turn);
@@ -48,39 +49,43 @@ export function scoreMove(state: GameState, move: Move): number {
   const localAfter = local.slice();
   if (evalWinner9(newBoard) === turn) {
     localAfter[bi] = turn;
-    if (computeBigResult(localAfter) === turn) {
+    if (computeBigResult(localAfter, variant) === turn) {
       return 1000; // Immediate win - take it!
     }
   }
 
-  // 2. WIN A LOCAL BOARD (+100)
+  // 2. WIN A LOCAL BOARD
   if (evalWinner9(newBoard) === turn) {
-    score += 100;
+    // In Tic-Tac-Ku, winning boards is more valuable since you need 5
+    score += variant === "tictacku" ? 120 : 100;
 
-    // Bonus if this board is on a big-board winning line
-    const bigCells: Cell[] = localAfter.map((r) =>
-      r === "X" || r === "O" ? r : null
-    );
-    for (const line of LINES) {
-      const myCount = countInLine(bigCells, line, turn);
-      if (myCount === 2 && line.includes(bi)) {
-        score += 50; // Getting 2-in-a-row on big board
+    // In classic mode, bonus if this board is on a big-board winning line
+    if (variant === "classic") {
+      const bigCells: Cell[] = localAfter.map((r) =>
+        r === "X" || r === "O" ? r : null
+      );
+      for (const line of LINES) {
+        const myCount = countInLine(bigCells, line, turn);
+        if (myCount === 2 && line.includes(bi)) {
+          score += 50; // Getting 2-in-a-row on big board
+        }
       }
     }
   }
 
-  // 3. BLOCK OPPONENT FROM WINNING LOCAL BOARD (+90)
+  // 3. BLOCK OPPONENT FROM WINNING LOCAL BOARD
   const oppBoard = boards[bi].slice();
   oppBoard[ci] = opp;
   if (evalWinner9(oppBoard) === opp) {
-    score += 90;
+    // In Tic-Tac-Ku, blocking is more important
+    score += variant === "tictacku" ? 110 : 90;
   }
 
   // 4. BLOCK OPPONENT FROM WINNING THE GAME (+500)
   const oppLocalAfter = local.slice();
   if (evalWinner9(oppBoard) === opp) {
     oppLocalAfter[bi] = opp;
-    if (computeBigResult(oppLocalAfter) === opp) {
+    if (computeBigResult(oppLocalAfter, variant) === opp) {
       score += 500;
     }
   }
@@ -146,7 +151,7 @@ export function scoreMove(state: GameState, move: Move): number {
 // ─────────────────────────────────────────────────────────────
 
 /** Pick the best move for the current player using heuristic scoring */
-export function pickMove(state: GameState, difficulty: Difficulty = "medium"): Move | null {
+export function pickMove(state: GameState, difficulty: Difficulty = "medium", variant: Variant = "classic"): Move | null {
   const moves = legalMoves(state);
   if (moves.length === 0) return null;
 
@@ -158,7 +163,7 @@ export function pickMove(state: GameState, difficulty: Difficulty = "medium"): M
   // Score all moves
   const scored = moves.map((m) => ({
     ...m,
-    score: scoreMove(state, m),
+    score: scoreMove(state, m, variant),
   }));
 
   // Sort descending by score
@@ -189,7 +194,7 @@ export function pickMove(state: GameState, difficulty: Difficulty = "medium"): M
 // ─────────────────────────────────────────────────────────────
 
 /** Evaluate position strength for a player (-100 to +100) */
-function evaluatePosition(state: GameState, player: Player): number {
+function evaluatePosition(state: GameState, player: Player, variant: Variant = "classic"): number {
   const opp = other(player);
   let score = 0;
 
@@ -200,17 +205,25 @@ function evaluatePosition(state: GameState, player: Player): number {
     if (result === player) myBoards++;
     else if (result === opp) oppBoards++;
   }
-  score += (myBoards - oppBoards) * 20;
+  // In Tic-Tac-Ku, each board win is worth more
+  const boardValue = variant === "tictacku" ? 15 : 20;
+  score += (myBoards - oppBoards) * boardValue;
 
-  // Count big-board threats (2-in-a-row)
-  const bigCells: Cell[] = state.local.map((r) =>
-    r === "X" || r === "O" ? r : null
-  );
-  for (const line of LINES) {
-    const myCount = countInLine(bigCells, line, player);
-    const oppCount = countInLine(bigCells, line, opp);
-    if (myCount === 2 && oppCount === 0) score += 15;
-    if (oppCount === 2 && myCount === 0) score -= 15;
+  // In classic mode, count big-board threats (2-in-a-row)
+  if (variant === "classic") {
+    const bigCells: Cell[] = state.local.map((r) =>
+      r === "X" || r === "O" ? r : null
+    );
+    for (const line of LINES) {
+      const myCount = countInLine(bigCells, line, player);
+      const oppCount = countInLine(bigCells, line, opp);
+      if (myCount === 2 && oppCount === 0) score += 15;
+      if (oppCount === 2 && myCount === 0) score -= 15;
+    }
+  } else {
+    // Tic-Tac-Ku: bonus for being closer to 5
+    if (myBoards >= 4) score += 25;
+    if (oppBoards >= 4) score -= 25;
   }
 
   // Clamp to -100 to +100
@@ -218,10 +231,10 @@ function evaluatePosition(state: GameState, player: Player): number {
 }
 
 /** Should AI offer a double? */
-export function shouldDouble(state: GameState): boolean {
+export function shouldDouble(state: GameState, variant: Variant = "classic"): boolean {
   if (!canDouble(state)) return false;
 
-  const positionScore = evaluatePosition(state, state.turn);
+  const positionScore = evaluatePosition(state, state.turn, variant);
 
   // Double when ahead - threshold scales with cube value (more cautious at higher stakes)
   const threshold = 15 + state.cubeValue * 3;
@@ -229,11 +242,11 @@ export function shouldDouble(state: GameState): boolean {
 }
 
 /** Should AI accept a double? */
-export function shouldAcceptDouble(state: GameState): boolean {
+export function shouldAcceptDouble(state: GameState, variant: Variant = "classic"): boolean {
   if (!state.pendingDouble) return true;
 
   const responder = other(state.pendingDouble);
-  const positionScore = evaluatePosition(state, responder);
+  const positionScore = evaluatePosition(state, responder, variant);
 
   // Accept unless clearly losing (score < -40)
   // At higher cube values, be slightly more conservative
@@ -318,7 +331,8 @@ function pick<T>(arr: T[]): T {
 export function generateCommentary(
   stateBefore: GameState,
   stateAfter: GameState,
-  move: Move
+  move: Move,
+  variant: Variant = "classic"
 ): string | null {
   // Only comment ~30% of the time to avoid being annoying
   if (Math.random() > 0.35) return null;
@@ -330,7 +344,7 @@ export function generateCommentary(
   // Score all moves to evaluate this one
   const scored = moves.map((m) => ({
     move: m,
-    score: scoreMove(stateBefore, m),
+    score: scoreMove(stateBefore, m, variant),
   }));
   scored.sort((a, b) => b.score - a.score);
 
@@ -351,8 +365,8 @@ export function generateCommentary(
   const blockedWin = evalWinner9(boardCopy) === aiPlayer;
 
   // Position evaluation
-  const positionBefore = evaluatePosition(stateBefore, aiPlayer);
-  const positionAfter = evaluatePosition(stateAfter, aiPlayer);
+  const positionBefore = evaluatePosition(stateBefore, aiPlayer, variant);
+  const positionAfter = evaluatePosition(stateAfter, aiPlayer, variant);
 
   const scoreRange = bestScore - worstScore;
   const scoreFromBest = bestScore - moveScore;

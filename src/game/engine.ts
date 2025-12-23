@@ -1,5 +1,6 @@
 export type Player = "X" | "O";
 export type Difficulty = "easy" | "medium" | "hard";
+export type Variant = "classic" | "tictacku";
 export type Cell = Player | null;
 export type LocalResult = Player | "D" | null; // D = draw (full, no winner)
 export type GameResult = Player | "D" | null;
@@ -61,8 +62,23 @@ export function computeLocalResult(cells: Cell[]): LocalResult {
   return null;
 }
 
-export function computeBigResult(local: LocalResult[]): GameResult {
-  // Treat "D" as not owned by either player for win-lines
+export function computeBigResult(local: LocalResult[], variant: Variant = "classic"): GameResult {
+  if (variant === "tictacku") {
+    // Tic-Tac-Ku: First to win 5 boards wins
+    let xWins = 0, oWins = 0;
+    for (const r of local) {
+      if (r === "X") xWins++;
+      else if (r === "O") oWins++;
+    }
+    if (xWins >= 5) return "X";
+    if (oWins >= 5) return "O";
+    // Draw if neither player can reach 5
+    const remaining = local.filter(r => r === null).length;
+    if (xWins + remaining < 5 && oWins + remaining < 5) return "D";
+    return null;
+  }
+
+  // Classic: 3-in-a-row on the board grid
   const bigCells: Cell[] = local.map((r) => (r === "X" || r === "O" ? r : null));
   const w = evalWinner9(bigCells);
   if (w) return w;

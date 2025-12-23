@@ -310,6 +310,50 @@
   color: white;
 }
 
+/* Advanced Options */
+.advancedSection {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.advancedToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  transition: all 150ms ease;
+}
+
+.advancedToggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.advancedArrow {
+  font-size: 0.7rem;
+}
+
+.advancedContent {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+}
+
+.optionDesc {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
 .startCta {
   width: 100%;
   padding: 14px 24px;
@@ -765,6 +809,29 @@
   margin-left: 8px;
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Continue bar (shown when viewing board after game ends in match) */
+.continueBar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px var(--shadow);
+  z-index: 50;
+  animation: slideUp 0.3s ease;
+}
+
+.continueBtnPrimary {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
 }
 
 /* Doubling Cube */

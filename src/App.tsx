@@ -9,6 +9,7 @@ import {
   isLegalMove,
   other,
   type Player,
+  type Variant,
 } from "./game/engine";
 import { generateCommentary, pickMove, shouldAcceptDouble, shouldDouble } from "./game/ai";
 import { acceptDouble, applyMove, declineDouble, offerDouble } from "./game/state";
@@ -101,6 +102,8 @@ export default function App() {
   const [aiTargetBoard, setAiTargetBoard] = useState<number | null>(null);
   const [matchTarget, setMatchTarget] = useState<number | null>(null); // null = single game, 7 = first to 7
   const [matchScore, setMatchScore] = useState({ human: 0, ai: 0 });
+  const [variant, setVariant] = useState<Variant>("classic");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Apply theme to document
   useEffect(() => {
@@ -219,14 +222,14 @@ export default function App() {
 
     const move = { bi, ci };
     const prevState = state;
-    const newState = applyMove(prevState, move);
+    const newState = applyMove(prevState, move, variant);
 
     pushHistory(prevState);
     setState(newState);
 
     // Generate AI commentary on player's move (only in vs AI mode)
     if (vsAI && playerSide && prevState.turn === playerSide) {
-      const comment = generateCommentary(prevState, newState, move);
+      const comment = generateCommentary(prevState, newState, move, variant);
       if (comment) {
         setCommentary(comment);
       }
@@ -273,8 +276,9 @@ export default function App() {
     setMatchScore({ human: 0, ai: 0 }); // Reset match score
   }
 
-  // Start next game in a match (keep same sides and settings)
+  // Start next game in a match (swap sides so players alternate who goes first)
   function nextMatchGame() {
+    setPlayerSide((prev) => (prev === "X" ? "O" : "X"));
     setState(initialState());
     setHistory([]);
     setGameRecorded(false);
@@ -317,7 +321,7 @@ export default function App() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiThinking(true);
       const timer = setTimeout(() => {
-        if (shouldAcceptDouble(state)) {
+        if (shouldAcceptDouble(state, variant)) {
           setState((prev) => acceptDouble(prev));
         } else {
           setState((prev) => declineDouble(prev));
@@ -338,13 +342,13 @@ export default function App() {
     // Small delay to feel more natural
     const timer = setTimeout(() => {
       // Consider doubling first (if cube enabled and AI can double)
-      if (useCube && shouldDouble(state)) {
+      if (useCube && shouldDouble(state, variant)) {
         setState((prev) => offerDouble(prev));
         setAiThinking(false);
         return;
       }
 
-      const move = pickMove(state, difficulty);
+      const move = pickMove(state, difficulty, variant);
       if (move) {
         // Step 1: Highlight the target board (like player sees)
         setAiTargetBoard(move.bi);
@@ -354,7 +358,7 @@ export default function App() {
           setLastAiMove({ bi: move.bi, ci: move.ci });
           setState((prev) => {
             pushHistory(prev);
-            return applyMove(prev, move);
+            return applyMove(prev, move, variant);
           });
 
           // Step 3: After another pause, clear and end turn
@@ -370,7 +374,7 @@ export default function App() {
     }, 200);
 
     return () => clearTimeout(timer);
-  }, [vsAI, aiSide, playerSide, state, useCube, difficulty]);
+  }, [vsAI, aiSide, playerSide, state, useCube, difficulty, variant]);
 
   // Compute winLines for display (UI-only concern)
   const getWinLine = (bi: number): number | null => {
@@ -534,6 +538,39 @@ export default function App() {
                   {useCube ? "✓" : ""}
                 </span>
               </button>
+            </div>
+
+            <div className="advancedSection">
+              <button
+                className="advancedToggle"
+                onClick={() => setShowAdvanced((v) => !v)}
+              >
+                <span>Advanced Options</span>
+                <span className="advancedArrow">{showAdvanced ? "▲" : "▼"}</span>
+              </button>
+              {showAdvanced && (
+                <div className="advancedContent">
+                  <div className="startSectionTitle">Variant</div>
+                  <div className="startOptions">
+                    <button
+                      className={`optionCard ${variant === "classic" ? "selected" : ""}`}
+                      onClick={() => setVariant("classic")}
+                    >
+                      <span className="optionIcon">3</span>
+                      <span className="optionLabel">Classic</span>
+                      <span className="optionDesc">3-in-a-row</span>
+                    </button>
+                    <button
+                      className={`optionCard ${variant === "tictacku" ? "selected" : ""}`}
+                      onClick={() => setVariant("tictacku")}
+                    >
+                      <span className="optionIcon">5</span>
+                      <span className="optionLabel">Tic-Tac-Ku</span>
+                      <span className="optionDesc">First to 5 boards</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button className="startCta" onClick={startGame}>
@@ -703,6 +740,40 @@ export default function App() {
             )}
           </div>
         </div>
+        );
+      })()}
+
+      {/* Continue match button when viewing board after game */}
+      {state.result && !showVictory && !isReplaying && matchTarget && (() => {
+        const humanWon = vsAI && state.result === playerSide;
+        const aiWon = vsAI && state.result === aiSide;
+        const points = useCube ? state.cubeValue : 1;
+        const matchWon = matchScore.human >= matchTarget || matchScore.ai >= matchTarget;
+        // Also check if this game just pushed someone over (in case gameRecorded hasn't fired yet)
+        const wouldWin = (matchScore.human + (humanWon ? points : 0)) >= matchTarget ||
+                         (matchScore.ai + (aiWon ? points : 0)) >= matchTarget;
+
+        if (matchWon || wouldWin) {
+          return (
+            <div className="continueBar">
+              <button className="btn continueBtnPrimary" onClick={restart}>
+                New Match
+              </button>
+              <button className="btn" onClick={() => setShowVictory(true)}>
+                Show Result
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="continueBar">
+            <button className="btn continueBtnPrimary" onClick={nextMatchGame}>
+              Next Game
+            </button>
+            <button className="btn" onClick={() => setShowVictory(true)}>
+              Show Result
+            </button>
+          </div>
         );
       })()}
 

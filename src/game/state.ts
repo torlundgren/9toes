@@ -6,10 +6,11 @@ import {
   other,
   type GameState,
   type Move,
+  type Variant,
 } from "./engine";
 
 /** Apply a move to the state and return the new state (immutable) */
-export function applyMove(state: GameState, move: Move): GameState {
+export function applyMove(state: GameState, move: Move, variant: Variant = "classic"): GameState {
   const { bi, ci } = move;
 
   const boards = cloneBoards(state.boards);
@@ -24,7 +25,7 @@ export function applyMove(state: GameState, move: Move): GameState {
   let nextBoard: number | null = ci;
   if (local[ci] !== null) nextBoard = null; // target board already decided -> free choice
 
-  const result = computeBigResult(local);
+  const result = computeBigResult(local, variant);
 
   return {
     boards,
