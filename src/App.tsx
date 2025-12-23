@@ -125,6 +125,7 @@ export default function App() {
   const [matchScore, setMatchScore] = useState({ human: 0, ai: 0 });
   const [variant, setVariant] = useState<Variant>("classic");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Apply theme to document
   useEffect(() => {
@@ -855,6 +856,14 @@ export default function App() {
       <div className="themeToggles">
         <button
           className="themeToggle"
+          onClick={() => setShowHelp(true)}
+          aria-label="How to play"
+          title="How to play"
+        >
+          ?
+        </button>
+        <button
+          className="themeToggle"
           onClick={cycleBoardTheme}
           aria-label={`Board theme: ${boardTheme}`}
           title={`Board: ${boardTheme}`}
@@ -869,6 +878,50 @@ export default function App() {
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
       </div>
+
+      {/* Help modal */}
+      {showHelp && (
+        <div className="helpOverlay" onClick={() => setShowHelp(false)}>
+          <div className="helpModal" onClick={(e) => e.stopPropagation()}>
+            <button className="helpClose" onClick={() => setShowHelp(false)}>×</button>
+            <h2 className="helpTitle">How to Play</h2>
+            <div className="helpContent">
+              <p><strong>9Toes</strong> is Ultimate Tic-Tac-Toe — a strategic twist on the classic game.</p>
+
+              <h3>The Basics</h3>
+              <ul>
+                <li>The board has <strong>9 local boards</strong> arranged in a 3×3 grid.</li>
+                <li>Win 3 local boards in a row to win the game.</li>
+                <li>Win a local board by getting 3 in a row within it.</li>
+              </ul>
+
+              <h3>The Twist</h3>
+              <ul>
+                <li>Where you play determines where your opponent must play next.</li>
+                <li>Play in cell 5 of any board → opponent must play in board 5.</li>
+                <li>If that board is won or full, opponent can play anywhere.</li>
+              </ul>
+
+              <h3>Strategy Tips</h3>
+              <ul>
+                <li>Think ahead — your move affects your opponent's options.</li>
+                <li>Sometimes losing a local board is worth controlling where play goes.</li>
+                <li>Watch the highlighted board — that's where you must play.</li>
+              </ul>
+
+              {useCube && (
+                <>
+                  <h3>Doubling Cube</h3>
+                  <ul>
+                    <li>Like backgammon, you can raise the stakes by doubling.</li>
+                    <li>Your opponent can accept (game worth 2× points) or decline (you win current stakes).</li>
+                  </ul>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1234,3 +1234,113 @@
     display: none;
   }
 }
+
+/* Help Modal */
+.helpOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.helpModal {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+}
+
+.helpClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.helpClose:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.helpTitle {
+  margin: 0 0 16px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+.helpContent {
+  color: var(--text);
+  line-height: 1.6;
+  text-align: left;
+}
+
+.helpContent p {
+  margin: 0 0 16px 0;
+}
+
+.helpContent h3 {
+  margin: 20px 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.helpContent ul {
+  margin: 0 0 12px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.helpContent li {
+  margin-bottom: 8px;
+  padding-left: 28px;
+  position: relative;
+}
+
+.helpContent li::before {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-weight: 900;
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+/* Alternate X and O bullets */
+.helpContent li:nth-child(odd)::before {
+  content: "X";
+  color: var(--x-color);
+}
+
+.helpContent li:nth-child(even)::before {
+  content: "O";
+  color: var(--o-color);
+}
+
+.helpContent strong {
+  color: var(--x-color);
+}
