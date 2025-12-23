@@ -523,34 +523,31 @@ export default function App() {
               </div>
             </div>
 
-            <div className="startSection">
-              <div className="startSectionTitle">Options</div>
-              <button
-                className={`optionToggle ${useCube ? "selected" : ""}`}
-                onClick={() => setUseCube((v) => !v)}
-              >
-                <span className="optionToggleIcon">🎲</span>
-                <span className="optionToggleText">
-                  <span className="optionToggleLabel">Doubling Cube</span>
-                  <span className="optionToggleDesc">Backgammon-style stakes</span>
-                </span>
-                <span className={`optionToggleCheck ${useCube ? "checked" : ""}`}>
-                  {useCube ? "✓" : ""}
-                </span>
-              </button>
-            </div>
-
             <div className="advancedSection">
               <button
                 className="advancedToggle"
                 onClick={() => setShowAdvanced((v) => !v)}
               >
-                <span>Advanced Options</span>
+                <span>Options</span>
                 <span className="advancedArrow">{showAdvanced ? "▲" : "▼"}</span>
               </button>
               {showAdvanced && (
                 <div className="advancedContent">
-                  <div className="startSectionTitle">Variant</div>
+                  <button
+                    className={`optionToggle ${useCube ? "selected" : ""}`}
+                    onClick={() => setUseCube((v) => !v)}
+                  >
+                    <span className="optionToggleIcon">🎲</span>
+                    <span className="optionToggleText">
+                      <span className="optionToggleLabel">Doubling Cube</span>
+                      <span className="optionToggleDesc">Backgammon-style stakes</span>
+                    </span>
+                    <span className={`optionToggleCheck ${useCube ? "checked" : ""}`}>
+                      {useCube ? "✓" : ""}
+                    </span>
+                  </button>
+
+                  <div className="startSectionTitle" style={{ marginTop: 16 }}>Variant</div>
                   <div className="startOptions">
                     <button
                       className={`optionCard ${variant === "classic" ? "selected" : ""}`}
