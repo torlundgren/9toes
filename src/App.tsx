@@ -28,8 +28,10 @@ type Stats = {
 
 const STATS_KEY = "9toes-stats";
 const THEME_KEY = "9toes-theme";
+const BOARD_THEME_KEY = "9toes-board-theme";
 
 type Theme = "light" | "dark";
+type BoardTheme = "basic" | "wood" | "metallic";
 
 function loadTheme(): Theme {
   try {
@@ -44,6 +46,24 @@ function loadTheme(): Theme {
 function saveTheme(theme: Theme) {
   try {
     localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    // Ignore
+  }
+}
+
+function loadBoardTheme(): BoardTheme {
+  try {
+    const saved = localStorage.getItem(BOARD_THEME_KEY);
+    if (saved === "basic" || saved === "wood" || saved === "metallic") return saved;
+  } catch {
+    // Ignore
+  }
+  return "basic";
+}
+
+function saveBoardTheme(theme: BoardTheme) {
+  try {
+    localStorage.setItem(BOARD_THEME_KEY, theme);
   } catch {
     // Ignore
   }
@@ -97,6 +117,7 @@ export default function App() {
   const [replayIndex, setReplayIndex] = useState<number | null>(null);
   const [autoPlay, setAutoPlay] = useState(false);
   const [theme, setTheme] = useState<Theme>(loadTheme);
+  const [boardTheme, setBoardTheme] = useState<BoardTheme>(loadBoardTheme);
   const [commentary, setCommentary] = useState<string | null>(null);
   const [lastAiMove, setLastAiMove] = useState<{ bi: number; ci: number } | null>(null);
   const [aiTargetBoard, setAiTargetBoard] = useState<number | null>(null);
@@ -111,6 +132,11 @@ export default function App() {
     saveTheme(theme);
   }, [theme]);
 
+  // Save board theme when it changes
+  useEffect(() => {
+    saveBoardTheme(boardTheme);
+  }, [boardTheme]);
+
   // Auto-dismiss commentary after 3 seconds
   useEffect(() => {
     if (!commentary) return;
@@ -120,6 +146,10 @@ export default function App() {
 
   function toggleTheme() {
     setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }
+
+  function cycleBoardTheme() {
+    setBoardTheme((t) => t === "basic" ? "wood" : t === "wood" ? "metallic" : "basic");
   }
 
   // Board to display (either current state or replay state)
@@ -578,7 +608,7 @@ export default function App() {
       ) : (
         <>
           <main className="boardWrap" aria-label="Ultimate Tic-Tac-Toe Board">
-            <div className="bigGrid">
+            <div className="bigGrid" data-board-theme={boardTheme}>
               {displayState.boards.map((board, bi) => {
             const decided = displayState.local[bi];
             const winLine = getWinLine(bi);
@@ -821,14 +851,24 @@ export default function App() {
         </div>
       )}
 
-      {/* Theme toggle */}
-      <button
-        className="themeToggle"
-        onClick={toggleTheme}
-        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      >
-        {theme === "dark" ? "☀️" : "🌙"}
-      </button>
+      {/* Theme toggles */}
+      <div className="themeToggles">
+        <button
+          className="themeToggle"
+          onClick={cycleBoardTheme}
+          aria-label={`Board theme: ${boardTheme}`}
+          title={`Board: ${boardTheme}`}
+        >
+          {boardTheme === "basic" ? "⬜" : boardTheme === "wood" ? "🪵" : "🔩"}
+        </button>
+        <button
+          className="themeToggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        >
+          {theme === "dark" ? "☀️" : "🌙"}
+        </button>
+      </div>
     </div>
   );
 }

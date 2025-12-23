@@ -23,6 +23,20 @@
   --x-color: #3b82f6;
   --o-color: #ef4444;
   --accent: #646cff;
+
+  /* Wood texture colors - dark theme */
+  --wood-base: #8b7355;
+  --wood-grain1: #7a6548;
+  --wood-grain2: #9a8465;
+  --wood-grain3: #6d5a42;
+  --wood-highlight: rgba(255, 255, 255, 0.05);
+
+  /* Metallic texture colors - dark theme (brushed steel) */
+  --metal-base: #4a4f54;
+  --metal-brush1: rgba(255, 255, 255, 0.03);
+  --metal-brush2: rgba(0, 0, 0, 0.08);
+  --metal-highlight: rgba(255, 255, 255, 0.15);
+  --metal-shadow: rgba(0, 0, 0, 0.3);
 }
 
 /* Light theme */
@@ -42,6 +56,20 @@
   --x-color: #2563eb;
   --o-color: #dc2626;
   --accent: #4f46e5;
+
+  /* Wood texture colors - light theme (lighter, warmer wood) */
+  --wood-base: #d4b896;
+  --wood-grain1: #c4a882;
+  --wood-grain2: #e0c8a8;
+  --wood-grain3: #b89b70;
+  --wood-highlight: rgba(255, 255, 255, 0.3);
+
+  /* Metallic texture colors - light theme (polished aluminum) */
+  --metal-base: #c8ccd0;
+  --metal-brush1: rgba(255, 255, 255, 0.4);
+  --metal-brush2: rgba(0, 0, 0, 0.05);
+  --metal-highlight: rgba(255, 255, 255, 0.6);
+  --metal-shadow: rgba(0, 0, 0, 0.15);
 }
 
 /* Apply theme */
