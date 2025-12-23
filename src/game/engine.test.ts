@@ -116,4 +116,39 @@ describe("engine", () => {
     state.nextBoard = 3;
     expect(isLegalMove(state, { bi: 0, ci: 1 })).toBe(false);
   });
+
+  // Tic-Tac-Ku variant tests
+  describe("Tic-Tac-Ku variant", () => {
+    it("X wins with 5 boards", () => {
+      const local: LocalResult[] = ["X", "X", "X", "X", "X", null, null, null, null];
+      expect(computeBigResult(local, "tictacku")).toBe("X");
+    });
+
+    it("O wins with 5 boards", () => {
+      const local: LocalResult[] = ["O", "X", "O", "X", "O", "X", "O", "O", null];
+      expect(computeBigResult(local, "tictacku")).toBe("O");
+    });
+
+    it("4 boards is not enough to win", () => {
+      const local: LocalResult[] = ["X", "X", "X", "X", null, null, null, null, null];
+      expect(computeBigResult(local, "tictacku")).toBeNull();
+    });
+
+    it("game continues when remaining board could decide winner", () => {
+      // X has 4, O has 4, 1 remaining - whoever wins that board wins
+      const local: LocalResult[] = ["X", "X", "X", "X", "O", "O", "O", "O", null];
+      expect(computeBigResult(local, "tictacku")).toBeNull();
+    });
+
+    it("draw when all boards decided and neither has 5", () => {
+      const local: LocalResult[] = ["X", "X", "X", "X", "O", "O", "O", "O", "D"];
+      expect(computeBigResult(local, "tictacku")).toBe("D");
+    });
+
+    it("no draw yet if a player can still reach 5", () => {
+      // X has 4, O has 3, 2 remaining - X can still reach 5
+      const local: LocalResult[] = ["X", "X", "X", "X", "O", "O", "O", null, null];
+      expect(computeBigResult(local, "tictacku")).toBeNull();
+    });
+  });
 });

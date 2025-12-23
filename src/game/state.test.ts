@@ -55,4 +55,32 @@ describe("applyMove", () => {
     expect(next.pendingDouble).toBeNull();
     expect(next.result).toBe("O");
   });
+
+  it("acceptDouble returns unchanged state if no pending double", () => {
+    const state = initialState();
+    const next = acceptDouble(state);
+    expect(next).toBe(state);
+  });
+
+  it("declineDouble returns unchanged state if no pending double", () => {
+    const state = initialState();
+    const next = declineDouble(state);
+    expect(next).toBe(state);
+  });
+
+  it("offerDouble does nothing if double not allowed", () => {
+    const state = initialState();
+    state.result = "X"; // Game over - can't double
+    const next = offerDouble(state);
+    expect(next).toBe(state);
+  });
+
+  it("cube value doubles on accept", () => {
+    const state = initialState();
+    state.cubeValue = 4;
+    state.pendingDouble = "X";
+    const next = acceptDouble(state);
+    expect(next.cubeValue).toBe(8);
+    expect(next.cubeOwner).toBe("O");
+  });
 });
