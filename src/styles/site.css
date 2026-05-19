@@ -235,17 +235,17 @@
 .btn:hover { transform: translate(-1px, -1px); }
 .btn:active { transform: translate(0, 0); }
 
-.btn-primary {
+.site .btn-primary {
   background: var(--ink);
   color: var(--paper);
 }
-.btn-primary:hover { background: var(--vermillion); border-color: var(--vermillion); color: var(--paper) !important; }
+.site .btn-primary:hover { background: var(--vermillion); border-color: var(--vermillion); color: var(--paper); }
 
-.btn-ghost {
+.site .btn-ghost {
   background: transparent;
   color: var(--ink);
 }
-.btn-ghost:hover { background: var(--ink); color: var(--paper) !important; }
+.site .btn-ghost:hover { background: var(--ink); color: var(--paper); }
 
 .btn .arrow {
   font-family: serif;
@@ -341,11 +341,12 @@
   50% { transform: rotate(8deg) translateY(-8px); }
 }
 
-.cube {
+.site .cube {
   width: 92px;
   height: 92px;
   border-radius: 14px;
-  background: var(--paper);
+  background-color: var(--paper);
+  background-image: none;
   border: 2px solid var(--ink);
   box-shadow: 4px 4px 0 var(--ink);
   display: grid;
@@ -361,7 +362,7 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   position: relative;
 }
-.cube::before {
+.site .cube::before {
   content: "DOUBLE";
   position: absolute;
   top: 6px;
@@ -373,25 +374,28 @@
   color: var(--ink-mute);
   font-weight: 500;
 }
-.cube:hover {
+.site .cube:hover {
+  background-color: var(--paper);
+  border-color: var(--ink);
   transform: translate(-2px, -2px) rotate(-3deg);
   box-shadow: 6px 6px 0 var(--ink);
 }
-.cube:active {
+.site .cube:active {
   transform: translate(2px, 2px) rotate(2deg);
   box-shadow: 1px 1px 0 var(--ink);
 }
-.cube.cube-large {
+.site .cube.cube-large {
   width: 200px;
   height: 200px;
   font-size: 96px;
   border-radius: 24px;
   box-shadow: 8px 8px 0 var(--ink);
 }
-.cube.cube-large::before { font-size: 10px; top: 14px; }
-.cube.cube-large:hover { box-shadow: 12px 12px 0 var(--ink); }
-.cube .cube-val {
+.site .cube.cube-large::before { font-size: 10px; top: 14px; }
+.site .cube.cube-large:hover { box-shadow: 12px 12px 0 var(--ink); }
+.site .cube .cube-val {
   display: inline-block;
+  color: var(--ink);
   transition: transform 0.22s ease;
 }
 
