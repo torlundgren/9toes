@@ -31,7 +31,7 @@ const THEME_KEY = "9toes-theme";
 const BOARD_THEME_KEY = "9toes-board-theme";
 
 type Theme = "light" | "dark";
-type BoardTheme = "basic" | "wood" | "metallic";
+type BoardTheme = "basic" | "wood" | "metallic" | "paper";
 
 function loadTheme(): Theme {
   try {
@@ -54,7 +54,7 @@ function saveTheme(theme: Theme) {
 function loadBoardTheme(): BoardTheme {
   try {
     const saved = localStorage.getItem(BOARD_THEME_KEY);
-    if (saved === "basic" || saved === "wood" || saved === "metallic") return saved;
+    if (saved === "basic" || saved === "wood" || saved === "metallic" || saved === "paper") return saved;
   } catch {
     // Ignore
   }
@@ -127,11 +127,16 @@ export default function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  // Apply theme to document
+  // Apply theme to document. The paper board skin brings its own palette
+  // and typography, with a light/dark variant that follows the dark/light toggle.
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    const effective =
+      boardTheme === "paper"
+        ? (theme === "dark" ? "paper-dark" : "paper")
+        : theme;
+    document.documentElement.setAttribute("data-theme", effective);
     saveTheme(theme);
-  }, [theme]);
+  }, [theme, boardTheme]);
 
   // Save board theme when it changes
   useEffect(() => {
@@ -150,8 +155,19 @@ export default function App() {
   }
 
   function cycleBoardTheme() {
-    setBoardTheme((t) => t === "basic" ? "wood" : t === "wood" ? "metallic" : "basic");
+    setBoardTheme((t) =>
+      t === "basic" ? "wood" :
+      t === "wood" ? "metallic" :
+      t === "metallic" ? "paper" :
+      "basic"
+    );
   }
+
+  const boardThemeIcon =
+    boardTheme === "basic" ? "⬜" :
+    boardTheme === "wood" ? "🪵" :
+    boardTheme === "metallic" ? "🔩" :
+    "📰";
 
   // Board to display (either current state or replay state)
   const displayState = useMemo(() => {
@@ -868,7 +884,7 @@ export default function App() {
           aria-label={`Board theme: ${boardTheme}`}
           title={`Board: ${boardTheme}`}
         >
-          {boardTheme === "basic" ? "⬜" : boardTheme === "wood" ? "🪵" : "🔩"}
+          {boardThemeIcon}
         </button>
         <button
           className="themeToggle"
