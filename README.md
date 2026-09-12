@@ -1,10 +1,14 @@
 # 9Toes
 
 **Ultimate tic-tac-toe with a doubling cube.** Nine boards, recursive strategy, and
-stakes borrowed from backgammon. Playable in the browser, with a SwiftUI port for iOS
-and macOS sharing the same engine behavior.
+stakes borrowed from backgammon. Playable in the browser, with a Swift port of the engine
+that the iOS app builds against.
 
 Live site: [9toes.app](https://9toes.app/)
+
+The **iOS app lives in `9toes-ios`**, not here. It consumes this repo's Swift engine as a
+local package (`XCLocalSwiftPackageReference "../9toes/swift"`), so it expects `9toes` and
+`9toes-ios` checked out as siblings. This repo holds the web app and both engine ports.
 
 ## The game
 
@@ -44,8 +48,7 @@ src/
   pages/         Landing, Privacy, Support
   App.tsx        The playable game
 swift/
-  Sources/NineToesEngine/   Swift port of the same engine
-  Sources/NineToesApp/      SwiftUI app
+  Sources/NineToesEngine/   Swift port of the same engine; consumed by 9toes-ios
   Tests/                    Mirrors the TS golden tests
 scripts/
   check-fixtures.mjs        Guards fixture parity across the two ports
@@ -123,9 +126,9 @@ before merge either way.
 | **Web** | `check:fixtures`, `lint`, `typecheck`, `test:coverage` (thresholds enforced), `build` |
 | **Swift engine** | `swift test` in a `swift:6.1` container |
 
-Both jobs run on `ubuntu-latest`. The Swift engine target imports only Foundation, and
-the SwiftUI app is not a declared SPM target, so the engine tests need no Apple
-frameworks — verified on `aarch64-unknown-linux-gnu`. Keeping them on Linux avoids the
+Both jobs run on `ubuntu-latest`. The Swift package builds only the engine, which imports
+nothing but Foundation, so its tests need no Apple frameworks — verified on
+`aarch64-unknown-linux-gnu`. Keeping them on Linux avoids the
 10× macOS runner billing multiplier, and this repo is public, so the self-hosted Mac mini
 is off-limits: fork pull requests would execute arbitrary code on it.
 
@@ -133,9 +136,9 @@ A side benefit worth preserving: because CI compiles the engine on Linux, an acc
 `import UIKit` or other Apple-only dependency fails the build. That keeps the engine
 portable for the server-side move validation in `docs/MVP_BACKEND_SPEC.md`.
 
-Note that **nothing builds the SwiftUI app** — `NineToesApp` is not a declared target in
-`Package.swift` and there is no committed Xcode project, so that code is not compiled by
-`swift build` or by CI.
+What CI does **not** cover is the iOS app itself, which lives in `9toes-ios` and has no CI
+of its own. A break there — including one caused by an engine change made here — surfaces
+only when someone opens Xcode.
 
 ## Status
 
