@@ -1,8 +1,4 @@
-type Cell = "X" | "O" | "";
-type LocalState = {
-  cells: Cell[];
-  won?: "X" | "O";
-};
+import type { LocalState } from "./sampleGame";
 
 type Props = {
   boards: LocalState[];
@@ -32,16 +28,3 @@ export default function MiniBoard({ boards, activeBoard }: Props) {
     </div>
   );
 }
-
-/** Pre-composed sample state that reads as a real, interesting position. */
-export const sampleGame: LocalState[] = [
-  { cells: ["X", "O", "", "", "X", "", "O", "", "X"], won: "X" },
-  { cells: ["", "X", "O", "X", "", "O", "", "", ""] },
-  { cells: ["O", "", "X", "O", "X", "", "", "O", ""] },
-  { cells: ["", "X", "", "O", "O", "O", "", "X", ""], won: "O" },
-  { cells: ["X", "", "O", "", "X", "", "O", "", "X"], won: "X" },
-  { cells: ["", "", "", "X", "O", "", "", "", ""] },
-  { cells: ["X", "O", "", "", "", "", "O", "", "X"] },
-  { cells: ["", "X", "O", "", "X", "", "O", "", ""] },
-  { cells: ["O", "O", "O", "X", "X", "", "", "", ""], won: "O" },
-];
