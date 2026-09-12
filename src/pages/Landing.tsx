@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import DoublingCube from "../components/DoublingCube";
-import MiniBoard, { sampleGame } from "../components/MiniBoard";
+import MiniBoard from "../components/MiniBoard";
+import { sampleGame } from "../components/sampleGame";
 
 export default function Landing() {
   return (
