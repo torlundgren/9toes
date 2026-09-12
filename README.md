@@ -47,6 +47,8 @@ swift/
   Sources/NineToesEngine/   Swift port of the same engine
   Sources/NineToesApp/      SwiftUI app
   Tests/                    Mirrors the TS golden tests
+scripts/
+  check-fixtures.mjs        Guards fixture parity across the two ports
 docs/
   MVP_BACKEND_SPEC.md        Multiplayer design (not yet built)
 ```
@@ -65,8 +67,10 @@ npm run dev          # Vite dev server
 npm run build        # tsc -b && vite build
 npm run lint
 npm run typecheck
-npm test             # vitest (watch)
+npm test             # vitest (watch); gated on check:fixtures
 npm run test:coverage
+npm run check:fixtures   # golden fixtures identical across both ports?
+npm run sync:fixtures    # repair drift: src/game/fixtures -> swift/
 ```
 
 Swift engine and app:
@@ -89,13 +93,23 @@ similar. They cover rule invariants (forced board, fall-through to free choice, 
 detection), AI sanity (never miss an immediate win or block), and exact scoring
 snapshots.
 
-Fixtures are currently **duplicated by hand** into
-`swift/Tests/NineToesEngineTests/Fixtures/`. Keep the two copies in sync when adding or
-editing one — nothing enforces it yet:
+SwiftPM resources must live inside the test target, so the fixtures are physically
+duplicated into `swift/Tests/NineToesEngineTests/Fixtures/`. `src/game/fixtures/` is
+canonical — author fixtures there, next to `golden.test.ts`.
+
+A drifted copy is the one failure this design is vulnerable to: the two engines could
+diverge while both suites stay green, because each is asserting against different
+expectations. So the copies are checked, not trusted. `npm test` and
+`npm run test:coverage` refuse to run until they match:
 
 ```sh
-diff -r src/game/fixtures swift/Tests/NineToesEngineTests/Fixtures
+npm run check:fixtures   # compare; non-zero exit on drift (runs automatically via pretest)
+npm run sync:fixtures    # copy src/game/fixtures -> swift/, then re-run `swift test`
 ```
+
+The check covers contents, files missing from the Swift copy, and orphans left behind in
+it. Nothing guards the Swift side, though — `swift test` has no equivalent hook, so run
+`npm run check:fixtures` after editing fixtures if you are working only in Swift.
 
 ## Status
 
