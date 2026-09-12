@@ -49,6 +49,8 @@ swift/
   Tests/                    Mirrors the TS golden tests
 scripts/
   check-fixtures.mjs        Guards fixture parity across the two ports
+.github/workflows/
+  ci.yml                    Lint, types, tests, build, Swift engine
 docs/
   MVP_BACKEND_SPEC.md        Multiplayer design (not yet built)
 ```
@@ -108,8 +110,32 @@ npm run sync:fixtures    # copy src/game/fixtures -> swift/, then re-run `swift 
 ```
 
 The check covers contents, files missing from the Swift copy, and orphans left behind in
-it. Nothing guards the Swift side, though — `swift test` has no equivalent hook, so run
-`npm run check:fixtures` after editing fixtures if you are working only in Swift.
+it. `swift test` has no equivalent hook, so editing fixtures while working only in Swift
+skips the local gate — CI runs the same check on every pull request, so drift is caught
+before merge either way.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`:
+
+| Job | Runs |
+| --- | --- |
+| **Web** | `check:fixtures`, `lint`, `typecheck`, `test:coverage` (thresholds enforced), `build` |
+| **Swift engine** | `swift test` in a `swift:6.1` container |
+
+Both jobs run on `ubuntu-latest`. The Swift engine target imports only Foundation, and
+the SwiftUI app is not a declared SPM target, so the engine tests need no Apple
+frameworks — verified on `aarch64-unknown-linux-gnu`. Keeping them on Linux avoids the
+10× macOS runner billing multiplier, and this repo is public, so the self-hosted Mac mini
+is off-limits: fork pull requests would execute arbitrary code on it.
+
+A side benefit worth preserving: because CI compiles the engine on Linux, an accidental
+`import UIKit` or other Apple-only dependency fails the build. That keeps the engine
+portable for the server-side move validation in `docs/MVP_BACKEND_SPEC.md`.
+
+Note that **nothing builds the SwiftUI app** — `NineToesApp` is not a declared target in
+`Package.swift` and there is no committed Xcode project, so that code is not compiled by
+`swift build` or by CI.
 
 ## Status
 

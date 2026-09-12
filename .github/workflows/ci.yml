@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Re-pushes cancel superseded runs.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web (lint, types, tests, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # First, and as its own step: a drift failure here means the TS and Swift
+      # engines are being tested against different expectations, which makes
+      # every result below it untrustworthy.
+      - name: Golden fixtures in sync across both engine ports
+        run: npm run check:fixtures
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      # Enforces the coverage thresholds in vite.config.ts (80/80/70/80).
+      - name: Tests and coverage
+        run: npm run test:coverage
+
+      - run: npm run build
+
+  engine-swift:
+    name: Swift engine
+    runs-on: ubuntu-latest
+    # The engine target is Foundation-only and NineToesApp (SwiftUI) is not a
+    # declared SPM target, so `swift test` needs no Apple frameworks and runs
+    # on Linux. Deliberate: macOS runners bill at 10x, and the self-hosted mini
+    # must never take a public repo, where fork PRs would run arbitrary code
+    # on it.
+    container: swift:6.1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: swift test
+        working-directory: swift
+        run: swift test
